@@ -1,22 +1,22 @@
+'use client';
 import {
   Navbar as HeroUINavbar,
-  NavbarContent,
-  NavbarMenu,
-  NavbarMenuToggle,
   NavbarBrand,
+  NavbarContent,
   NavbarItem,
+  NavbarMenu,
   NavbarMenuItem,
+  NavbarMenuToggle,
 } from '@heroui/navbar';
-import { Kbd } from '@heroui/kbd';
-import { Link } from '@heroui/link';
-import { Input } from '@heroui/input';
+import clsx from 'clsx';
 import { link as linkStyles } from '@heroui/theme';
 import NextLink from 'next/link';
-import clsx from 'clsx';
+import { Input, Kbd, Link } from '@heroui/react';
 
-import { siteConfig } from '@/config/site';
-import { ThemeSwitch } from '@/components/theme-switch';
 import { Logo, SearchIcon } from './icons';
+
+import { ThemeSwitch } from '@/components/theme-switch';
+import { siteConfig } from '@/config/site';
 
 export const Navbar = () => {
   const searchInput = (
