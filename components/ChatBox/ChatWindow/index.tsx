@@ -8,6 +8,8 @@ import {
 import { Spinner } from '@heroui/spinner';
 
 import { fakeMessages } from './config';
+import MessageItem from './MessageItem';
+import ChatHeader from './ChatHeader';
 
 import { Message } from '@/interfaces/response';
 import FallBack from '@/components/FallBack';
@@ -34,38 +36,8 @@ const ChatWindow = () => {
     content = (
       <VirtuosoMessageList<Message, null>
         ref={virtuoso}
-        ItemContent={({ index }) => {
-          const msg = messages[index];
-          const isSelf = msg.senderId === 'you';
-
-          return (
-            <div
-              className={`flex flex-col gap-1 py-1 ${
-                isSelf ? 'items-end text-right' : 'items-start text-left'
-              }`}
-            >
-              <span className="text-xs text-default-400">
-                {isSelf ? 'You' : msg.senderId}
-              </span>
-              <div
-                className={`rounded-xl px-3 py-2 max-w-[70%] ${
-                  isSelf
-                    ? 'bg-primary text-white'
-                    : 'bg-default-100 text-default-800'
-                }`}
-              >
-                {msg.content}
-              </div>
-              <span className="text-2xs text-default-300">
-                {new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </div>
-          );
-        }}
-        className="h-full"
+        ItemContent={(props) => <MessageItem {...props} />}
+        className="h-full w-full"
         data={{
           data: messages,
         }}
@@ -74,9 +46,10 @@ const ChatWindow = () => {
   }
 
   return (
-    <div className="flex gap-2 p-4 flex-1 flex-col h-full">
+    <div className="flex gap-4 flex-col w-full h-full">
+      <ChatHeader />
       <VirtuosoMessageListLicense licenseKey="">
-        {content}
+        <div className="p-2 flex-1 h-full flex flex-col">{content}</div>
       </VirtuosoMessageListLicense>
     </div>
   );

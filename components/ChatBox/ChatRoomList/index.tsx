@@ -78,14 +78,14 @@ const ChatRoomList = () => {
 
           <div className="mx-auto" />
 
-          <Button isIconOnly>
+          <Button isIconOnly size="sm">
             <Icon className="text-xl" icon="entypo:new-message" />
           </Button>
         </div>
 
         <div className="flex items-center gap-4">
           {isSearchOpen && (
-            <Button isIconOnly onPress={toggleSearch}>
+            <Button isIconOnly size="sm" onPress={toggleSearch}>
               <Icon className="text-xl" icon="ion:arrow-back" />
             </Button>
           )}

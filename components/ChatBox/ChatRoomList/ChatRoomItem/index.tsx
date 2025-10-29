@@ -17,8 +17,8 @@ interface ChatRoomItemProps {
   onSelect?: (id: string) => void;
 }
 
-const ChatRoomItem = ({ data, selectedId, onSelect }: ChatRoomItemProps) => {
-  const isSelected = selectedId === data.id;
+const ChatRoomItem = (props: ChatRoomItemProps) => {
+  const isSelected = props.selectedId === props.data?.id;
 
   return (
     <div
@@ -29,25 +29,25 @@ const ChatRoomItem = ({ data, selectedId, onSelect }: ChatRoomItemProps) => {
           'bg-primary-50 dark:bg-primary-900/20': isSelected,
         },
       )}
-      onClick={() => onSelect?.(data.id)}
+      onClick={() => props.onSelect?.(props?.data?.id)}
     >
       <div className="relative">
         <Badge
           color="primary"
           content={
-            data.unreadCount && data.unreadCount > 0
-              ? data.unreadCount
+            props?.data?.unreadCount && props?.data?.unreadCount > 0
+              ? props?.data?.unreadCount
               : undefined
           }
-          isInvisible={!data.unreadCount}
+          isInvisible={!props?.data?.unreadCount}
           placement="top-right"
           shape="circle"
         >
           <Avatar
-            fallback={data.name.charAt(0).toUpperCase()}
+            fallback={props?.data?.name.charAt(0).toUpperCase()}
             radius="md"
             size="lg"
-            src={data.avatarUrl}
+            src={props?.data?.avatarUrl}
           />
         </Badge>
       </div>
@@ -55,10 +55,10 @@ const ChatRoomItem = ({ data, selectedId, onSelect }: ChatRoomItemProps) => {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
           <span className="font-semibold text-sm truncate text-foreground">
-            {data.name}
+            {props?.data?.name}
           </span>
           <span className="text-[0.75rem] text-default-400">
-            {new Date(data.createdAt).toLocaleDateString(undefined, {
+            {new Date(props?.data?.createdAt).toLocaleDateString(undefined, {
               month: 'short',
               day: 'numeric',
             })}
@@ -67,7 +67,7 @@ const ChatRoomItem = ({ data, selectedId, onSelect }: ChatRoomItemProps) => {
 
         <div className="flex items-center justify-between mt-1">
           <p className="text-default-500 text-sm truncate">
-            {data.topic || data.description || 'No topic'}
+            {props?.data?.topic || props?.data?.description || 'No topic'}
           </p>
         </div>
       </div>

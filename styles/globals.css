@@ -1,3 +1,35 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@config "../tailwind.config.js";
 
-@config "../tailwind.config.js"
+/* 🌿 Scrollbar đẹp và tinh tế */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-500/40 rounded-full;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-500/60;
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+}
+
+/* 🌗 Dark mode tinh chỉnh */
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-400/30;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400/60;
+}
