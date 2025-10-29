@@ -3,7 +3,10 @@ import React from 'react';
 import clsx from 'clsx';
 import { Avatar } from '@heroui/react';
 
+import { useChatRoom } from '../../hook';
+
 import { Message } from '@/interfaces/response';
+import { getUrlMedia } from '@/helpers';
 
 interface MessageItemProps {
   index: number;
@@ -15,6 +18,8 @@ interface MessageItemProps {
 const MessageItem = ({ data, prevData, nextData }: MessageItemProps) => {
   const msg = data;
   const isSelf = msg.senderId === 'you';
+
+  const { chatRoom } = useChatRoom();
 
   return (
     <div
@@ -30,11 +35,11 @@ const MessageItem = ({ data, prevData, nextData }: MessageItemProps) => {
           {prevData?.senderId !== msg.senderId ? (
             <div className="w-10">
               <Avatar
-                isBordered
                 className="ml-2"
+                fallback={chatRoom.data?.name?.charAt(0)}
                 radius="full"
                 size="sm"
-                src="https://i.pravatar.cc/150?img=32"
+                src={getUrlMedia(chatRoom.data?.avatarUrl!)}
               />
             </div>
           ) : (

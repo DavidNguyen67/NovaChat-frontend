@@ -6,17 +6,20 @@ import React from 'react';
 import { Avatar, Badge } from '@heroui/react';
 import clsx from 'clsx';
 
+import { useChatRoom } from '../../hook';
+
 import { ChatRoom } from '@/interfaces/response';
+import { getUrlMedia } from '@/helpers';
 
 interface ChatRoomItemProps {
   index: number;
   data: ChatRoom;
-  selectedId?: string;
-  onSelect?: (id: string) => void;
 }
 
 const ChatRoomItem = (props: ChatRoomItemProps) => {
-  const isSelected = props.selectedId === props.data?.id;
+  const { chatRoom } = useChatRoom();
+
+  const isSelected = chatRoom?.data?.id === props.data?.id;
 
   return (
     <div
@@ -27,7 +30,7 @@ const ChatRoomItem = (props: ChatRoomItemProps) => {
           'bg-primary-50 dark:bg-primary-900/20': isSelected,
         },
       )}
-      onClick={() => props.onSelect?.(props?.data?.id)}
+      onClick={() => chatRoom?.mutate(props?.data)}
     >
       <div className="relative">
         <Badge
@@ -45,7 +48,7 @@ const ChatRoomItem = (props: ChatRoomItemProps) => {
             fallback={props?.data?.name.charAt(0).toUpperCase()}
             radius="md"
             size="lg"
-            src={props?.data?.avatarUrl}
+            src={getUrlMedia(props?.data?.avatarUrl!)}
           />
         </Badge>
       </div>

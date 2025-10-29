@@ -10,7 +10,8 @@ import {
 import { Button, Spinner } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
-import { fakeMessages } from './config';
+import { useChatRoom } from '../hook';
+
 import MessageItem from './MessageItem';
 import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
@@ -21,11 +22,9 @@ import FallBack from '@/components/FallBack';
 const ChatWindow = () => {
   const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { messageList, chatRoom } = useChatRoom();
 
-  const [isError] = useState<boolean>(false);
-
-  const [dataView, setDataView] = useState<Message[]>(fakeMessages);
+  const [dataView, setDataView] = useState<Message[]>([]);
 
   const [isAtBottom, setIsAtBottom] = useState(true);
 
@@ -46,7 +45,9 @@ const ChatWindow = () => {
       }
       querying.current = true;
 
-      const data: Message[] = [];
+      const data = await messageList.trigger({});
+
+      setDataView((prev) => [...data, ...prev]);
 
       if (data) {
         if (data.length >= fetchCount.current) {
@@ -73,14 +74,6 @@ const ChatWindow = () => {
     }
   };
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIsTyping(Math.random() > 0.7);
-    }, 4000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   const handleScrollToBottom = () => {
     virtuoso.current?.scrollToItem({
       index: dataView.length - 1,
@@ -89,64 +82,84 @@ const ChatWindow = () => {
     });
   };
 
-  let content: React.ReactNode;
+  useEffect(() => {
+    requestData();
+  }, []);
 
-  if (isLoading) {
-    content = (
-      <div className="flex flex-col items-center justify-center h-full text-default-500 gap-3">
-        <Spinner color="primary" label="Loading messages..." size="lg" />
-      </div>
-    );
-  } else if (isError) {
-    content = <FallBack type="error" />;
-  } else {
-    content = (
-      <VirtuosoMessageList<Message, null>
-        ref={virtuoso}
-        EmptyPlaceholder={() => <FallBack type="empty" />}
-        ItemContent={MessageItem}
-        className="h-full w-full"
-        data={{
-          data: dataView,
-          scrollModifier: isAtBottom
-            ? { type: 'auto-scroll-to-bottom', autoScroll: 'smooth' }
-            : null,
-        }}
-        initialLocation={{ index: dataView.length - 1, align: 'end' }}
-        onScroll={onScroll}
-      />
-    );
-  }
+  const renderContent = () => {
+    if (!dataView.length) {
+      if (messageList.error) {
+        return <FallBack type="error" />;
+      }
+      if (!messageList.isMutating) {
+        return <FallBack message="Try to chat something" type="empty" />;
+      }
+    } else {
+      return (
+        <VirtuosoMessageList<Message, null>
+          ref={virtuoso}
+          EmptyPlaceholder={() => <FallBack type="empty" />}
+          Footer={() =>
+            dataView.length &&
+            messageList.isMutating && (
+              <div className="py-3 text-center text-gray-500 dark:text-gray-400">
+                <Spinner color="primary" size="sm" />
+              </div>
+            )
+          }
+          ItemContent={MessageItem}
+          className="h-full w-full"
+          data={{
+            data: dataView,
+            scrollModifier: isAtBottom
+              ? { type: 'auto-scroll-to-bottom', autoScroll: 'smooth' }
+              : null,
+          }}
+          initialLocation={{ index: dataView.length - 1, align: 'end' }}
+          onScroll={onScroll}
+        />
+      );
+    }
+  };
 
   return (
-    <div className="relative flex flex-col w-full h-full bg-[#0E0E0F] text-white rounded-lg">
-      <ChatHeader />
+    <div className="relative flex flex-col w-full h-full border-default-200 text-white rounded-lg">
+      {chatRoom?.data?.id ? (
+        <>
+          <ChatHeader />
 
-      <VirtuosoMessageListLicense licenseKey="">
-        <div className="p-2 flex-1 flex flex-col overflow-hidden">
-          {content}
-        </div>
-      </VirtuosoMessageListLicense>
+          <VirtuosoMessageListLicense licenseKey="">
+            <div className="p-2 flex-1 flex flex-col overflow-hidden">
+              {renderContent()}
+            </div>
+          </VirtuosoMessageListLicense>
 
-      {isTyping && (
-        <div className="flex items-center gap-2 text-sm text-gray-400 px-5 pb-2">
-          <Icon className="animate-spin" icon="mdi:loading" />
-          <span>Someone is typing...</span>
-        </div>
+          {isTyping && (
+            <div className="flex items-center gap-2 text-sm text-gray-400 px-5 pb-2">
+              <Icon className="animate-spin" icon="mdi:loading" />
+              <span>Someone is typing...</span>
+            </div>
+          )}
+
+          {!isAtBottom && (
+            <Button
+              isIconOnly
+              className="absolute bottom-[5.5rem] right-4 bg-green-500 hover:bg-green-600 text-white shadow-md rounded-full"
+              size="sm"
+              onPress={handleScrollToBottom}
+            >
+              <Icon className="text-xl" icon="mdi:arrow-down" />
+            </Button>
+          )}
+
+          <ChatInput />
+        </>
+      ) : (
+        <FallBack
+          message="Choose a chat room to start chatting 💬"
+          type="empty"
+        />
       )}
-
-      {!isAtBottom && (
-        <Button
-          isIconOnly
-          className="absolute bottom-[5.5rem] right-4 bg-green-500 hover:bg-green-600 text-white shadow-md rounded-full"
-          size="sm"
-          onPress={handleScrollToBottom}
-        >
-          <Icon className="text-xl" icon="mdi:arrow-down" />
-        </Button>
-      )}
-
-      <ChatInput />
     </div>
   );
 };

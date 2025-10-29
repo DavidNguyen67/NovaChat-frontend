@@ -2,28 +2,24 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '@iconify/react';
-import { Button, Input } from '@heroui/react';
+import { Button, Input, Spinner } from '@heroui/react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
-import { fakeChatRooms } from './config';
+import { useChatRoom } from '../hook';
+
 import ChatRoomItem from './ChatRoomItem';
 
-import { SearchIcon } from '@/components/icons';
 import { ChatRoom } from '@/interfaces/response';
 import FallBack from '@/components/FallBack';
 
 const ChatRoomList = () => {
-  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const { chatRoomList } = useChatRoom();
 
-  const [selectedRoomId, setSelectedRoomId] = useState<string>();
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
   const [dataView, setDataView] = useState<ChatRoom[]>([]);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [isError] = useState<boolean>(false);
-
-  const [isAtTop, setIsAtTop] = useState<boolean>(false);
+  const [isShowScrollToTop, setIsShowScrollToTop] = useState<boolean>(false);
 
   const virtuoso = useRef<VirtuosoHandle>(null);
 
@@ -37,10 +33,6 @@ const ChatRoomList = () => {
 
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
 
-  useEffect(() => {
-    setDataView(fakeChatRooms);
-  }, []);
-
   const requestData = async () => {
     try {
       if (!hasMore.current || querying.current) {
@@ -48,11 +40,8 @@ const ChatRoomList = () => {
       }
 
       querying.current = true;
-      setIsLoading(true);
 
-      await new Promise((res) => setTimeout(res, 800));
-
-      const data: ChatRoom[] = [];
+      const data = await chatRoomList.trigger({});
 
       setDataView((prev) => [...data, ...prev]);
 
@@ -67,7 +56,6 @@ const ChatRoomList = () => {
       }
     } catch (error) {}
 
-    setIsLoading(false);
     querying.current = false;
   };
 
@@ -79,31 +67,40 @@ const ChatRoomList = () => {
     });
   };
 
-  let content: React.ReactNode;
+  useEffect(() => {
+    requestData();
+  }, []);
 
-  if (isError) {
-    content = <FallBack type="error" />;
-  } else if (!dataView.length && !isLoading) {
-    content = <FallBack type="empty" />;
-  } else {
-    content = (
+  const renderContent = () => {
+    if (!dataView.length) {
+      if (chatRoomList.error) return <FallBack type="error" />;
+      if (!chatRoomList.isMutating)
+        return (
+          <FallBack message="You don't have any chat rooms" type="empty" />
+        );
+    }
+
+    return (
       <Virtuoso
         ref={virtuoso}
-        atTopStateChange={(atTop) => setIsAtTop(!atTop)}
-        className="h-full"
+        atTopStateChange={(atTop) => setIsShowScrollToTop(!atTop)}
+        components={{
+          Footer: () =>
+            dataView.length &&
+            chatRoomList.isMutating && (
+              <div className="py-3 text-center text-gray-500 dark:text-gray-400">
+                <Spinner color="primary" size="sm" />
+              </div>
+            ),
+        }}
         data={dataView}
         endReached={requestData}
         itemContent={(index, item) => (
-          <ChatRoomItem
-            data={item}
-            index={index}
-            selectedId={selectedRoomId}
-            onSelect={setSelectedRoomId}
-          />
+          <ChatRoomItem data={item} index={index} />
         )}
       />
     );
-  }
+  };
 
   return (
     <div className="flex gap-2 w-100 p-4 border-r-2 border-default-200 relative">
@@ -130,7 +127,10 @@ const ChatRoomList = () => {
               input: 'text-sm',
             }}
             endContent={
-              <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
+              <Icon
+                className="text-base text-default-400 pointer-events-none flex-shrink-0"
+                icon="mdi:magnify"
+              />
             }
             labelPlacement="outside"
             placeholder="Search..."
@@ -141,10 +141,10 @@ const ChatRoomList = () => {
         </div>
 
         <div className="flex-1 flex flex-col gap-2 h-full relative">
-          {content}
+          {renderContent()}
         </div>
 
-        {isAtTop && (
+        {isShowScrollToTop && (
           <Button
             isIconOnly
             className="absolute bottom-[5.5rem] right-4 bg-green-500 hover:bg-green-600 text-white shadow-md rounded-full"

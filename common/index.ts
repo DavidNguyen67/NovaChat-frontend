@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+
 export enum CHAT_ROOM_TYPE {
   GROUP = 'group',
   DIRECT = 'direct',
@@ -19,16 +21,19 @@ export enum MESSAGE_STATUS {
   FAILED = 'failed',
 }
 
-export interface Attachment {
-  id: string;
-  url: string;
-  name?: string;
-  size?: number; // bytes
-  type?: string; // MIME type (vd: image/png)
-  thumbnailUrl?: string;
+export enum METHOD {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
 }
 
-export interface Reaction {
-  emoji: string; // vd: "❤️" hoặc ":thumbsup:"
-  userIds: string[]; // Danh sách người đã thả reaction đó
+export enum NOTIFICATION_TYPE {
+  INFO = 'INFO',
+  WARNING = 'WARNING',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
+  SYSTEM = 'SYSTEM',
+  MENTION = 'MENTION',
+  MESSAGE = 'MESSAGE',
 }

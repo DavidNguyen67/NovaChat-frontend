@@ -1,12 +1,34 @@
 /* eslint-disable prettier/prettier */
 
 import {
-  Attachment,
   CHAT_ROOM_TYPE,
   MESSAGE_STATUS,
   MESSAGE_TYPE,
-  Reaction,
+  NOTIFICATION_TYPE,
 } from '@/common';
+
+export interface RestError {
+  status?: RestError;
+  code?: string;
+  message?: string;
+  messageParams?: Record<string, unknown>;
+}
+
+export type RestResponse<T = Record<string, unknown>> = RestError & T;
+
+export interface Attachment {
+  id: string;
+  url: string;
+  name?: string;
+  size?: number;
+  type?: string;
+  thumbnailUrl?: string;
+}
+
+export interface Reaction {
+  emoji: string;
+  userIds: string[];
+}
 
 export interface BaseEntity {
   id: string;
@@ -18,28 +40,62 @@ export interface BaseEntity {
 export interface ChatRoom extends BaseEntity {
   name: string;
   description?: string;
-  members: string[]; // Danh sách userId hoặc username
-  messages: string[]; // Danh sách messageId hoặc Message[]
-  avatarUrl?: string; // Ảnh đại diện phòng
-  isPrivate?: boolean; // Phòng riêng tư hay không
-  ownerId?: string; // ID người tạo phòng
-  lastMessageId?: string; // ID tin nhắn cuối cùng
-  unreadCount?: number; // Số tin chưa đọc (cho từng user nếu cần)
-  type?: CHAT_ROOM_TYPE; // Loại phòng: nhóm hay 1-1
-  topic?: string; // Chủ đề phòng (nếu có)
-  pinnedMessageIds?: string[]; // Tin nhắn ghim
+  members: string[];
+  messages: string[];
+  avatarUrl?: string;
+  isPrivate?: boolean;
+  ownerId?: string;
+  lastMessageId?: string;
+  unreadCount?: number;
+  type?: CHAT_ROOM_TYPE;
+  topic?: string;
+  pinnedMessageIds?: string[];
+  isOnline?: boolean;
+  lastTimestamp?: Date;
 }
 
 export interface Message extends BaseEntity {
-  roomId: string; // ID của phòng chat
-  senderId: string; // ID người gửi
-  content: string; // Nội dung tin nhắn (text)
-  type?: MESSAGE_TYPE; // Loại tin nhắn: text, image, video, file, system, ...
-  attachments?: Attachment[]; // File đính kèm (ảnh, video, file, v.v.)
-  replyToId?: string; // ID tin nhắn được trả lời (nếu có)
-  reactions?: Reaction[]; // Danh sách emoji reactions
-  isEdited?: boolean; // Đã chỉnh sửa chưa
-  editedAt?: string; // Thời gian chỉnh sửa
-  readBy?: string[]; // Danh sách userId đã đọc
-  status?: MESSAGE_STATUS; // Trạng thái gửi (sending, sent, delivered, read)
+  roomId: string;
+  senderId: string;
+  content: string;
+  type?: MESSAGE_TYPE;
+  attachments?: Attachment[];
+  replyToId?: string;
+  reactions?: Reaction[];
+  isEdited?: boolean;
+  editedAt?: string;
+  readBy?: string[];
+  status?: MESSAGE_STATUS;
+}
+
+export interface User extends BaseEntity {
+  username: string;
+  fullName?: string;
+  email: string;
+  phoneNumber?: string;
+  passwordHash?: string;
+  avatarUrl?: string;
+  coverUrl?: string;
+  bio?: string;
+  gender?: 'male' | 'female' | 'other';
+  dateOfBirth?: Date;
+  isOnline?: boolean;
+  lastActiveAt?: Date;
+  roles?: string[];
+  isVerified?: boolean;
+  isBanned?: boolean;
+  theme?: 'light' | 'dark' | 'system';
+  language?: string;
+  settings?: Record<string, unknown>;
+}
+
+export interface NotificationItem extends BaseEntity {
+  name: string;
+  message: string;
+  isUnread?: boolean;
+  type: NOTIFICATION_TYPE;
+  icon?: string;
+  link?: string;
+  readAt?: Date | null;
+  metadata?: Record<string, any>;
 }
