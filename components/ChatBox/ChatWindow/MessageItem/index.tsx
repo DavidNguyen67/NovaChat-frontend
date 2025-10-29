@@ -21,20 +21,24 @@ const MessageItem = ({ data, prevData, nextData }: MessageItemProps) => {
       className={clsx(
         'flex w-full',
         isSelf ? 'justify-end' : 'justify-start',
-        'mb-1',
+        prevData?.senderId !== msg.senderId && 'mt-4',
+        prevData?.senderId === msg.senderId && 'mt-1',
       )}
     >
       {!isSelf && (
         <div className="flex items-end gap-2 max-w-[80%]">
           {prevData?.senderId !== msg.senderId ? (
-            <Avatar
-              isBordered
-              radius="full"
-              size="sm"
-              src="https://i.pravatar.cc/150?img=32"
-            />
+            <div className="w-10">
+              <Avatar
+                isBordered
+                className="ml-2"
+                radius="full"
+                size="sm"
+                src="https://i.pravatar.cc/150?img=32"
+              />
+            </div>
           ) : (
-            <div className="w-8" />
+            <div className="w-10" />
           )}
           <div
             className={clsx(
@@ -52,7 +56,7 @@ const MessageItem = ({ data, prevData, nextData }: MessageItemProps) => {
       )}
 
       {isSelf && (
-        <div className="flex items-end gap-2 max-w-[80%] flex-row-reverse">
+        <div className="flex items-end gap-2 max-w-[60%] flex-row-reverse">
           <div
             className={clsx(
               'rounded-2xl px-4 py-2 text-[15px] leading-[1.4] break-words shadow-sm',

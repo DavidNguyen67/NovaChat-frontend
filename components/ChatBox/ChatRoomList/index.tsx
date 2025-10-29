@@ -2,12 +2,8 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '@iconify/react';
-import { Button, Input, Spinner } from '@heroui/react';
-import {
-  VirtuosoMessageList,
-  VirtuosoMessageListLicense,
-  VirtuosoMessageListMethods,
-} from '@virtuoso.dev/message-list';
+import { Button, Input } from '@heroui/react';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
 import { fakeChatRooms } from './config';
 import ChatRoomItem from './ChatRoomItem';
@@ -17,67 +13,104 @@ import { ChatRoom } from '@/interfaces/response';
 import FallBack from '@/components/FallBack';
 
 const ChatRoomList = () => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
-  const [selectedRoomId, setSelectedRoomId] = useState<string | undefined>(
-    undefined,
-  );
+  const [selectedRoomId, setSelectedRoomId] = useState<string>();
 
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [dataView, setDataView] = useState<ChatRoom[]>([]);
 
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [isError] = useState<boolean>(false);
+
+  const [isAtTop, setIsAtTop] = useState<boolean>(false);
+
+  const virtuoso = useRef<VirtuosoHandle>(null);
+
+  const hasMore = useRef<boolean>(true);
+
+  const querying = useRef<boolean>(false);
+
+  const fetchCount = useRef<number>(20);
+
+  const lastTime = useRef<Date | null>(null);
+
+  const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
 
   useEffect(() => {
-    setChatRooms(fakeChatRooms);
+    setDataView(fakeChatRooms);
   }, []);
 
-  const virtuoso = useRef<VirtuosoMessageListMethods<ChatRoom>>(null);
+  const requestData = async () => {
+    try {
+      if (!hasMore.current || querying.current) {
+        return;
+      }
 
-  const [isLoading] = useState(false);
+      querying.current = true;
+      setIsLoading(true);
 
-  const [isError] = useState(false);
+      await new Promise((res) => setTimeout(res, 800));
+
+      const data: ChatRoom[] = [];
+
+      setDataView((prev) => [...data, ...prev]);
+
+      if (data) {
+        if (data.length >= fetchCount.current) {
+          hasMore.current = true;
+          lastTime.current = data[data.length - 1].createdAt;
+        } else {
+          lastTime.current = null;
+          hasMore.current = false;
+        }
+      }
+    } catch (error) {}
+
+    setIsLoading(false);
+    querying.current = false;
+  };
+
+  const handleScrollToTop = () => {
+    virtuoso.current?.scrollToIndex({
+      index: 0,
+      align: 'start',
+      behavior: 'smooth',
+    });
+  };
 
   let content: React.ReactNode;
 
-  if (isLoading) {
-    content = (
-      <div className="flex flex-col items-center justify-center h-full text-default-500 gap-3">
-        <Spinner color="primary" label="Loading messages..." size="lg" />
-      </div>
-    );
-  } else if (isError) {
+  if (isError) {
     content = <FallBack type="error" />;
-  } else if (!chatRooms || chatRooms.length === 0) {
+  } else if (!dataView.length && !isLoading) {
     content = <FallBack type="empty" />;
   } else {
     content = (
-      <VirtuosoMessageList<ChatRoom, null>
+      <Virtuoso
         ref={virtuoso}
-        ItemContent={(props) => (
+        atTopStateChange={(atTop) => setIsAtTop(!atTop)}
+        className="h-full"
+        data={dataView}
+        endReached={requestData}
+        itemContent={(index, item) => (
           <ChatRoomItem
-            {...props}
+            data={item}
+            index={index}
             selectedId={selectedRoomId}
-            onSelect={(id) => setSelectedRoomId(id)}
+            onSelect={setSelectedRoomId}
           />
         )}
-        className="h-full"
-        data={{
-          data: chatRooms,
-        }}
       />
     );
   }
 
   return (
-    <div className="flex gap-2 w-100 p-4 border-r-2 border-default-200">
+    <div className="flex gap-2 w-100 p-4 border-r-2 border-default-200 relative">
       <div className="flex gap-4 flex-col w-full">
         <div className="flex items-center gap-2">
           <div className="text-lg font-bold">Chats</div>
-
           <div className="mx-auto" />
-
           <Button isIconOnly size="sm">
             <Icon className="text-xl" icon="entypo:new-message" />
           </Button>
@@ -107,11 +140,20 @@ const ChatRoomList = () => {
           />
         </div>
 
-        <div className="flex-1 flex flex-col gap-2 h-full overflow-y-auto">
-          <VirtuosoMessageListLicense licenseKey="">
-            {content}
-          </VirtuosoMessageListLicense>
+        <div className="flex-1 flex flex-col gap-2 h-full relative">
+          {content}
         </div>
+
+        {isAtTop && (
+          <Button
+            isIconOnly
+            className="absolute bottom-[5.5rem] right-4 bg-green-500 hover:bg-green-600 text-white shadow-md rounded-full"
+            size="sm"
+            onPress={handleScrollToTop}
+          >
+            <Icon className="text-xl" icon="mdi:arrow-up" />
+          </Button>
+        )}
       </div>
     </div>
   );

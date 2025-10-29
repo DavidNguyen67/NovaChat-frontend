@@ -11,8 +11,6 @@ import { ChatRoom } from '@/interfaces/response';
 interface ChatRoomItemProps {
   index: number;
   data: ChatRoom;
-  prevData: ChatRoom | null;
-  nextData: ChatRoom | null;
   selectedId?: string;
   onSelect?: (id: string) => void;
 }

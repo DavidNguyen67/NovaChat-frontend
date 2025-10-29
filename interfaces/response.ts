@@ -10,9 +10,9 @@ import {
 
 export interface BaseEntity {
   id: string;
-  createdAt: string;
-  updatedAt?: string;
-  deletedAt?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export interface ChatRoom extends BaseEntity {
