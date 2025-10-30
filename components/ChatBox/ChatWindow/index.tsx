@@ -26,6 +26,8 @@ const ChatWindow = () => {
 
   const [dataView, setDataView] = useState<Message[]>([]);
 
+  const saveLists = useRef<Message[]>([]);
+
   const [isAtBottom, setIsAtBottom] = useState(true);
 
   const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -47,9 +49,10 @@ const ChatWindow = () => {
 
       const data = await messageList.trigger({});
 
-      setDataView((prev) => [...data, ...prev]);
-
       if (data) {
+        setDataView([...saveLists.current, ...data]);
+        saveLists.current = [...saveLists.current, ...data];
+
         if (data.length >= fetchCount.current) {
           hasMore.current = true;
           lastTime.current = data[data.length - 1].createdAt;
@@ -80,6 +83,13 @@ const ChatWindow = () => {
       align: 'end',
       behavior: 'smooth',
     });
+  };
+
+  const refreshData = () => {
+    lastTime.current = null;
+    hasMore.current = true;
+    saveLists.current = [];
+    requestData();
   };
 
   useEffect(() => {

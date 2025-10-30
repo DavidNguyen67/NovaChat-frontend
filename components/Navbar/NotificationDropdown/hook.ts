@@ -1,31 +1,39 @@
 /* eslint-disable prettier/prettier */
 
+import { METHOD } from '@/common';
 import { useMutation } from '@/hooks/swr';
 import { NotificationItem } from '@/interfaces/response';
 
 export const useNotification = () => {
-  const notificationList = useMutation<NotificationItem[]>('notification', {
-    url: 'notification',
-  });
+  const notificationList = useMutation<NotificationItem[]>(
+    '/api/v1/notification',
+    {
+      url: '/api/v1/notification',
+      method: METHOD.GET,
+    },
+  );
 
   const unreadNotification = useMutation<NotificationItem[]>(
-    'notification-unread',
+    '/api/v1/notification-unread',
     {
-      url: 'notification-unread',
+      url: '/api/v1/notification-unread',
+      method: METHOD.GET,
     },
   );
 
   const readNotification = useMutation<NotificationItem[]>(
-    'notification-read',
+    '/api/v1/notification-read',
     {
-      url: 'notification-read',
+      url: '/api/v1/notification-read',
+      method: METHOD.GET,
     },
   );
 
   const deleteNotification = useMutation<NotificationItem[]>(
-    'notification-delete',
+    '/api/v1/notification-delete',
     {
-      url: 'notification-delete',
+      url: '/api/v1/notification-delete',
+      method: METHOD.GET,
     },
   );
 

@@ -29,9 +29,11 @@ const ChatRoomList = () => {
 
   const fetchCount = useRef<number>(20);
 
-  const lastTime = useRef<Date | null>(null);
+  const lastId = useRef<string | null>(null);
 
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
+
+  const saveLists = useRef<ChatRoom[]>([]);
 
   const requestData = async () => {
     try {
@@ -46,11 +48,14 @@ const ChatRoomList = () => {
       setDataView((prev) => [...data, ...prev]);
 
       if (data) {
+        setDataView([...saveLists.current, ...data]);
+        saveLists.current = [...saveLists.current, ...data];
+
         if (data.length >= fetchCount.current) {
           hasMore.current = true;
-          lastTime.current = data[data.length - 1].createdAt;
+          lastId.current = data[data.length - 1].id;
         } else {
-          lastTime.current = null;
+          lastId.current = null;
           hasMore.current = false;
         }
       }
@@ -65,6 +70,13 @@ const ChatRoomList = () => {
       align: 'start',
       behavior: 'smooth',
     });
+  };
+
+  const refreshData = () => {
+    lastId.current = null;
+    hasMore.current = true;
+    saveLists.current = [];
+    requestData();
   };
 
   useEffect(() => {

@@ -10,6 +10,8 @@ import ProfileDropdown from './ProfileDropdown';
 import NotificationDropdown from './NotificationDropdown';
 import ThemeSwitcher from './ThemeSwitcher';
 
+import { useSession } from '@/hooks/auth/useSession';
+
 const Navbar = () => {
   const middleNavBar: TabNavBar[] = [
     { onPress: () => {}, icon: 'mdi:home-outline' },
@@ -18,6 +20,10 @@ const Navbar = () => {
     { onPress: () => {}, icon: 'mdi:storefront-outline' },
     { onPress: () => {}, icon: 'mdi:video-outline' },
   ];
+
+  const { sessionInfo } = useSession();
+
+  if (sessionInfo?.data == null) return null;
 
   return (
     <header className="flex items-center justify-between px-4 py-2 bg-[#f5f6f7] dark:bg-[#242526] border-b border-gray-200 dark:border-[#3A3B3C] text-gray-900 dark:text-white fixed top-0 left-0 right-0 z-50 h-14 transition-colors">
