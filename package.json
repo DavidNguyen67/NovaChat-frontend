@@ -23,8 +23,11 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-virtuoso": "^4.14.1",
+    "sc-channel": "1.2.0",
+    "socketcluster-client": "14.3.1",
     "swr": "^2.3.6",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "sc-codec-min-bin": "git+https://github.com/DavidNguyen67/sc-codec-min-bin.git"
   },
   "devDependencies": {
     "@eslint/compat": "^1.4.0",
@@ -35,6 +38,8 @@
     "@types/node": "20.5.7",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
+    "@types/sc-channel": "^2.0.4",
+    "@types/socketcluster-client": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "8.34.1",
     "@typescript-eslint/parser": "8.34.1",
     "eslint": "9.25.1",
