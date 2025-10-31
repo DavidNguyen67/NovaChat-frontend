@@ -5,10 +5,11 @@ import type { ThemeProviderProps } from 'next-themes';
 import { HeroUIProvider } from '@heroui/system';
 import { useRouter } from 'next/navigation';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import useSWR, { useSWRConfig } from 'swr';
+import { ToastProvider } from '@heroui/react';
 
 import { GLOBAL_SOCKET_INIT } from '@/common/global';
 import { initSocket } from '@/helpers/socket';
@@ -33,7 +34,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   const { mutate } = useSWRConfig();
   const { data: socketInit } = useSWR(GLOBAL_SOCKET_INIT);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!socketInit) {
       initSocket();
     }
@@ -41,7 +42,10 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
   return (
     <HeroUIProvider navigate={router.push}>
-      <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+      <NextThemesProvider {...themeProps}>
+        {children}
+        <ToastProvider maxVisibleToasts={3} placement="top-right" />
+      </NextThemesProvider>
     </HeroUIProvider>
   );
 }

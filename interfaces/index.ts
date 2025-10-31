@@ -9,3 +9,16 @@ export interface Config {
   provinceListUrl?: string;
   coordinatesListUrl?: string;
 }
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: ApiError;
+}
+
+export interface ApiError {
+  code: string;
+  message: string;
+  details?: string | Record<string, any>;
+}

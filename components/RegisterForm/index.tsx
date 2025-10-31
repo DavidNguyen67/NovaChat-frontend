@@ -104,13 +104,13 @@ const RegisterForm = () => {
   };
 
   const onSubmit = async (values: RegisterFormValues) => {
-    const payload: RegisterFormValues = _.cloneDeep(values);
-
-    payload.dateOfBirth = convertCalendarDateToJSDate(
-      payload.dateOfBirth as any,
-    );
-
     try {
+      const payload: RegisterFormValues = _.cloneDeep(values);
+
+      payload.dateOfBirth = convertCalendarDateToJSDate(
+        payload.dateOfBirth as any,
+      );
+
       const file = payload.avatarFile;
 
       if (file) {
@@ -143,9 +143,7 @@ const RegisterForm = () => {
     validateOnChange: true,
   });
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
+  const handleAvatarChange = (file: File) => {
     if (file) {
       prevFile.current = file;
       formik.setFieldTouched('avatarFile', true);
@@ -161,7 +159,8 @@ const RegisterForm = () => {
       prevFile.current?.name ?? `${v4()}.png`,
     );
 
-    formik.setFieldValue('avatarFile', croppedFile);
+    handleAvatarChange(croppedFile);
+
     setAvatarPreview(croppedImage);
   };
 
@@ -229,7 +228,9 @@ const RegisterForm = () => {
                     id="avatar"
                     name="avatarFile"
                     type="file"
-                    onChange={handleAvatarChange}
+                    onChange={(event) =>
+                      handleAvatarChange(event.target.files![0])
+                    }
                   />
 
                   {formik?.touched?.avatarFile && formik.errors.avatarFile && (
@@ -347,7 +348,10 @@ const RegisterForm = () => {
                   }
                 />
                 <RadioGroup
-                  classNames={{ wrapper: 'justify-evenly' }}
+                  classNames={{
+                    wrapper: 'justify-start gap-3',
+                    base: 'w-full',
+                  }}
                   errorMessage={
                     formik.touched.gender ? formik.errors.gender : undefined
                   }
@@ -442,11 +446,12 @@ const RegisterForm = () => {
                   onChange={formik.handleChange}
                 />
                 <Button
-                  className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform mt-2"
+                  className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform"
                   color="primary"
                   radius="lg"
                   type="submit"
                 >
+                  <Icon icon="mdi:account-plus-outline" />
                   Sign up
                 </Button>
               </Form>

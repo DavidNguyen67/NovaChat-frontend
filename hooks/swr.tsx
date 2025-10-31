@@ -1,13 +1,31 @@
+/* eslint-disable prettier/prettier */
 import type { SWRMutationConfiguration } from 'swr/mutation';
 
+import { addToast } from '@heroui/react';
 import useSWR from 'swr';
-/* eslint-disable prettier/prettier */
 import { mutate, PublicConfiguration } from 'swr/_internal';
 import useSWRMutation from 'swr/mutation';
 
 import { METHOD } from '@/common';
 import { RestError, RestResponse } from '@/interfaces/response';
 import { fetcher } from '@/common/restApi';
+import { ApiResponse } from '@/interfaces';
+
+interface WrapperConfig<T>
+  extends Partial<PublicConfiguration<T, RestError, (arg: string) => any>> {
+  url?: string;
+  method?: METHOD;
+  body?: Record<string, unknown>;
+  auth?: boolean;
+  enable?: boolean;
+  noEndPoint?: boolean;
+  extraHeader?: Record<string, string>;
+  notification?: {
+    title?: string;
+    message?: string;
+  };
+  ignoreNotification?: boolean;
+}
 
 export function useSWRWrapper<T = Record<string, unknown>>(
   key: string | null | (() => string | string[] | null) | string[],
@@ -18,16 +36,10 @@ export function useSWRWrapper<T = Record<string, unknown>>(
     auth,
     noEndPoint,
     enable = true,
+    notification,
+    ignoreNotification,
     ...config
-  }: {
-    url?: string;
-    method?: METHOD;
-    body?: Record<string, unknown>;
-    auth?: boolean;
-    enable?: boolean;
-    noEndPoint?: boolean;
-    extraHeader?: Record<string, string>;
-  } & Partial<PublicConfiguration<T, RestError, (arg: string) => any>> = {},
+  }: WrapperConfig<T>,
 ) {
   auth = auth ?? true;
 
@@ -69,10 +81,49 @@ export function useSWRWrapper<T = Record<string, unknown>>(
     {
       ...config,
       onError(err, swrKey) {
+        const error: ApiResponse<T> = err as ApiResponse<T>;
+
         config?.onError?.(err, swrKey, config as any);
+        if (notification && !ignoreNotification) {
+          addToast({
+            title: notification.title,
+            description: error?.error?.message,
+            color: 'danger',
+          });
+        }
+      },
+      onSuccess(data, swrKey) {
+        config?.onSuccess?.(data, swrKey, config as any);
+        if (notification && !ignoreNotification) {
+          addToast({
+            title: notification.title,
+            description: notification.message,
+            color: 'success',
+          });
+        }
       },
     },
   );
+}
+
+interface MutationConfig<T>
+  extends SWRMutationConfiguration<
+    RestResponse<T>,
+    RestError & Record<string, unknown>
+  > {
+  url?: string;
+  method?: METHOD;
+  componentId?: string;
+  loading?: boolean;
+  noEndpoint?: boolean;
+  noAuth?: boolean;
+  extraHeader?: Record<string, string>;
+  resultKey?: string;
+  notification?: {
+    title?: string;
+    message?: string;
+  };
+  ignoreNotification?: boolean;
 }
 
 export const useMutation = <T = Record<string, unknown>,>(
@@ -82,20 +133,10 @@ export const useMutation = <T = Record<string, unknown>,>(
     method,
     noEndpoint,
     resultKey,
-    ...options
-  }: {
-    url?: string;
-    method?: METHOD;
-    componentId?: string;
-    loading?: boolean;
-    noEndpoint?: boolean;
-    noAuth?: boolean;
-    extraHeader?: Record<string, string>;
-    resultKey?: string;
-  } & SWRMutationConfiguration<
-    RestResponse<T>,
-    RestError & Record<string, unknown>
-  >,
+    notification,
+    ignoreNotification,
+    ...config
+  }: MutationConfig<T>,
 ) => {
   return useSWRMutation(
     key,
@@ -115,14 +156,14 @@ export const useMutation = <T = Record<string, unknown>,>(
           url ?? swrKey,
           method ?? METHOD.POST,
           body as Record<string, unknown>,
-          options.noAuth
+          config.noAuth
             ? undefined
             : {
                 // ...(session?.accessToken && {
                 //   Authorization: `Bearer ${session?.accessToken}`,
                 // }),
                 ...extraHeader,
-                ...options?.extraHeader,
+                ...config?.extraHeader,
               },
           noEndpoint,
         )
@@ -147,11 +188,27 @@ export const useMutation = <T = Record<string, unknown>,>(
           .finally(() => {});
       }),
     {
-      onError(err, swrKey, config) {
-        options.onError?.(err, swrKey, config as any);
+      onError(err, swrKey) {
+        const error: ApiResponse<T> = err as ApiResponse<T>;
+
+        config?.onError?.(err, swrKey, config as any);
+        if (notification && !ignoreNotification) {
+          addToast({
+            title: notification.title,
+            description: error?.error?.message,
+            color: 'danger',
+          });
+        }
       },
-      onSuccess(data, swrKey, config) {
-        options.onSuccess?.(data, swrKey, config as any);
+      onSuccess(data, swrKey) {
+        config?.onSuccess?.(data, swrKey, config as any);
+        if (notification && !ignoreNotification) {
+          addToast({
+            title: notification.title,
+            description: notification.message,
+            color: 'success',
+          });
+        }
       },
     },
   );

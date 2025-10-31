@@ -1,13 +1,14 @@
 /* eslint-disable prettier/prettier */
 import { NextRequest, NextResponse } from 'next/server';
-import { v4 } from 'uuid';
 import HTTP_STATUS from 'http-status';
+import { v4 } from 'uuid';
 
 import { METHOD } from '@/common';
+import { ApiResponse } from '@/interfaces';
 
-async function handleProxy(
+export async function handleProxy(
   req: NextRequest,
-  method: string,
+  method: METHOD,
   params: { path: string[] },
 ) {
   try {
@@ -29,19 +30,52 @@ async function handleProxy(
       body,
     });
 
-    const resBody = await response.text();
+    const contentType = response.headers.get('content-type') || '';
+    const raw = await response.text();
 
-    return new NextResponse(resBody, {
-      status: response.status,
-      headers: response.headers,
-    });
+    let parsed: any;
+
+    try {
+      parsed = contentType.includes('application/json') ? JSON.parse(raw) : raw;
+    } catch {
+      parsed = raw;
+    }
+
+    if (!response.ok) {
+      const res: ApiResponse = {
+        success: false,
+        error: {
+          code: 'UPSTREAM_ERROR',
+          message: parsed?.message || 'Upstream API returned error',
+          details: parsed,
+        },
+      };
+
+      return NextResponse.json(res, { status: response.status });
+    }
+
+    const res: ApiResponse = {
+      success: true,
+      data: parsed,
+      message: 'Proxy success',
+    };
+
+    return NextResponse.json(res, { status: response.status });
   } catch (err: any) {
     console.error(`[Proxy Error - ${method}]`, err);
 
-    return NextResponse.json(
-      { error: 'Proxy request failed', message: err.message },
-      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR },
-    );
+    const errorResponse: ApiResponse = {
+      success: false,
+      error: {
+        code: 'PROXY_REQUEST_FAILED',
+        message: 'Proxy request failed',
+        details: err?.message ?? 'Unknown error',
+      },
+    };
+
+    return NextResponse.json(errorResponse, {
+      status: HTTP_STATUS.BAD_GATEWAY,
+    });
   }
 }
 

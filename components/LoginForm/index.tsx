@@ -25,7 +25,9 @@ const LoginForm = () => {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
-    await login(values);
+    try {
+      await login(values);
+    } catch (error) {}
   };
 
   const formik = useFormik<LoginFormValues>({
@@ -107,6 +109,7 @@ const LoginForm = () => {
                   radius="lg"
                   type="submit"
                 >
+                  <Icon icon="mdi:login" />
                   Log in
                 </Button>
               </Form>
@@ -114,7 +117,7 @@ const LoginForm = () => {
               <div className="text-center mt-2">
                 <Link
                   className="text-primary text-sm font-medium hover:underline"
-                  href="#"
+                  href="/forgot-password"
                 >
                   Forgotten password?
                 </Link>
@@ -128,6 +131,7 @@ const LoginForm = () => {
                 radius="lg"
                 onPress={() => router.push('/register')}
               >
+                <Icon icon="mdi:account-plus-outline" />
                 Create new account
               </Button>
             </CardBody>
