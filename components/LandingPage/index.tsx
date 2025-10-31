@@ -10,7 +10,7 @@ const LandingPage = () => {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center justify-center text-center min-h-screen p-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
+    <div className="w-full h-full flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
       <motion.div
         animate={{ opacity: 1, y: 0 }}

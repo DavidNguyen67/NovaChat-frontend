@@ -130,166 +130,160 @@ const ForgotPasswordForm = () => {
   });
 
   return (
-    <div className="relative flex min-h-screen flex-col justify-center items-center bg-background text-foreground p-6">
-      <motion.div
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-        initial={{ opacity: 0, y: 20 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Loader isLoading={formik.isSubmitting || forgotPassword.isMutating}>
-          <Card className="shadow-lg rounded-2xl border border-divider bg-content1 backdrop-blur-md">
-            <CardBody className="p-8 flex flex-col gap-5">
-              <div className="flex w-full relative">
-                {step === FORM_STEP.OTP && (
-                  <div
-                    className="absolute top-0 left-0 transform -translate-y-1/2 cursor-pointer flex items-center gap-1"
-                    onClick={() => setStep(FORM_STEP.SEARCH)}
-                  >
-                    <Icon icon="mdi:arrow-left" />
-                    Back
-                  </div>
-                )}
-
-                <h2 className="text-2xl font-semibold text-primary text-center w-full">
-                  {step === FORM_STEP.SEARCH
-                    ? 'Find Your Account'
-                    : 'Enter OTP Code'}
-                </h2>
-              </div>
-
-              {step === FORM_STEP.SEARCH ? (
-                <p className="text-center text-sm text-default-500">
-                  Please enter your email address or mobile number to search for
-                  your account.
-                </p>
-              ) : (
-                <p className="text-center text-sm text-default-500">
-                  We've sent a 6-digit OTP to{' '}
-                  <span className="font-medium">{userIdentifier}</span>.
-                </p>
+    <motion.div
+      animate={{ opacity: 1, y: 0 }}
+      className="w-[400px] max-w-full"
+      initial={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Loader isLoading={formik.isSubmitting || forgotPassword.isMutating}>
+        <Card className="shadow-lg rounded-2xl border border-divider bg-content1 backdrop-blur-md">
+          <CardBody className="p-8 flex flex-col gap-5">
+            <div className="flex w-full relative">
+              {step === FORM_STEP.OTP && (
+                <div
+                  className="absolute top-0 left-0 transform -translate-y-1/2 cursor-pointer flex items-center gap-1"
+                  onClick={() => setStep(FORM_STEP.SEARCH)}
+                >
+                  <Icon icon="mdi:arrow-left" />
+                  Back
+                </div>
               )}
 
-              <Form
-                className="flex flex-col gap-4 items-end"
-                onSubmit={formik.handleSubmit}
-              >
-                {step === FORM_STEP.SEARCH ? (
-                  <Input
+              <h2 className="text-2xl font-semibold text-primary text-center w-full">
+                {step === FORM_STEP.SEARCH
+                  ? 'Find Your Account'
+                  : 'Enter OTP Code'}
+              </h2>
+            </div>
+
+            {step === FORM_STEP.SEARCH ? (
+              <p className="text-center text-sm text-default-500">
+                Please enter your email address or mobile number to search for
+                your account.
+              </p>
+            ) : (
+              <p className="text-center text-sm text-default-500">
+                We've sent a 6-digit OTP to{' '}
+                <span className="font-medium">{userIdentifier}</span>.
+              </p>
+            )}
+
+            <Form
+              className="flex flex-col gap-4 items-end"
+              onSubmit={formik.handleSubmit}
+            >
+              {step === FORM_STEP.SEARCH ? (
+                <Input
+                  errorMessage={
+                    formik.touched.username ? formik.errors.username : undefined
+                  }
+                  isInvalid={
+                    !!(formik.touched.username && formik.errors.username)
+                  }
+                  name="username"
+                  placeholder="Email address or mobile number"
+                  radius="lg"
+                  startContent={
+                    <Icon
+                      className="text-primary text-xl"
+                      icon="mdi:account-search-outline"
+                    />
+                  }
+                  value={formik.values.username}
+                  variant="bordered"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                />
+              ) : (
+                <div className="flex flex-col gap-2 w-full">
+                  <InputOtp
+                    classNames={{
+                      base: 'w-full items-center justify-center',
+                      errorMessage: 'font-bold text-sm',
+                      segmentWrapper: 'p-0',
+                    }}
                     errorMessage={
-                      formik.touched.username
-                        ? formik.errors.username
-                        : undefined
+                      formik.touched.otp ? formik.errors.otp : undefined
                     }
-                    isInvalid={
-                      !!(formik.touched.username && formik.errors.username)
-                    }
-                    name="username"
-                    placeholder="Email address or mobile number"
+                    isInvalid={!!(formik.touched.otp && formik.errors.otp)}
+                    length={6}
+                    name="otp"
                     radius="lg"
-                    startContent={
-                      <Icon
-                        className="text-primary text-xl"
-                        icon="mdi:account-search-outline"
-                      />
-                    }
-                    value={formik.values.username}
+                    value={formik.values.otp}
                     variant="bordered"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                   />
-                ) : (
-                  <div className="flex flex-col gap-2 w-full">
-                    <InputOtp
-                      classNames={{
-                        base: 'w-full items-center justify-center',
-                        errorMessage: 'font-bold text-sm',
-                        segmentWrapper: 'p-0',
-                      }}
-                      errorMessage={
-                        formik.touched.otp ? formik.errors.otp : undefined
-                      }
-                      isInvalid={!!(formik.touched.otp && formik.errors.otp)}
-                      length={6}
-                      name="otp"
-                      radius="lg"
-                      value={formik.values.otp}
-                      variant="bordered"
-                      onBlur={formik.handleBlur}
-                      onChange={formik.handleChange}
-                    />
 
-                    <div className="flex justify-center text-sm text-default-500">
-                      {countdown > 0 ? (
-                        <span>Resend OTP in {countdown}s</span>
-                      ) : (
-                        <Button
-                          color="primary"
-                          size="sm"
-                          variant="light"
-                          onPress={handleResendOtp}
-                        >
-                          Resend OTP
-                        </Button>
-                      )}
-                    </div>
+                  <div className="flex justify-center text-sm text-default-500">
+                    {countdown > 0 ? (
+                      <span>Resend OTP in {countdown}s</span>
+                    ) : (
+                      <Button
+                        color="primary"
+                        size="sm"
+                        variant="light"
+                        onPress={handleResendOtp}
+                      >
+                        Resend OTP
+                      </Button>
+                    )}
                   </div>
-                )}
+                </div>
+              )}
 
-                <div className="flex items-center justify-center w-full">
+              <div className="flex items-center justify-center w-full">
+                <Button
+                  className="font-semibold text-base min-w-[8rem]"
+                  color="primary"
+                  isLoading={formik.isSubmitting}
+                  radius="lg"
+                  startContent={
+                    <Icon
+                      icon={
+                        step === FORM_STEP.SEARCH ? 'mdi:magnify' : 'mdi:check'
+                      }
+                    />
+                  }
+                  type="submit"
+                >
+                  {step === FORM_STEP.SEARCH ? 'Search' : 'Verify'}
+                </Button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-3 w-full">
+                <div className="flex items-center justify-center gap-3">
                   <Button
-                    className="font-semibold text-base min-w-[8rem]"
-                    color="primary"
-                    isLoading={formik.isSubmitting}
+                    className="font-semibold text-base"
+                    color="warning"
                     radius="lg"
-                    startContent={
-                      <Icon
-                        icon={
-                          step === FORM_STEP.SEARCH
-                            ? 'mdi:magnify'
-                            : 'mdi:check'
-                        }
-                      />
-                    }
-                    type="submit"
+                    startContent={<Icon icon="mdi:login" />}
+                    type="button"
+                    variant="flat"
+                    onPress={() => router.push('/login')}
                   >
-                    {step === FORM_STEP.SEARCH ? 'Search' : 'Verify'}
+                    Log in
+                  </Button>
+
+                  <Button
+                    className="font-semibold text-base"
+                    color="success"
+                    radius="lg"
+                    startContent={<Icon icon="mdi:account-plus-outline" />}
+                    type="button"
+                    variant="flat"
+                    onPress={() => router.push('/register')}
+                  >
+                    Sign up
                   </Button>
                 </div>
-
-                <div className="flex flex-col sm:flex-row justify-center items-center gap-3 w-full">
-                  <div className="flex items-center justify-center gap-3">
-                    <Button
-                      className="font-semibold text-base"
-                      color="warning"
-                      radius="lg"
-                      startContent={<Icon icon="mdi:login" />}
-                      type="button"
-                      variant="flat"
-                      onPress={() => router.push('/login')}
-                    >
-                      Log in
-                    </Button>
-
-                    <Button
-                      className="font-semibold text-base"
-                      color="success"
-                      radius="lg"
-                      startContent={<Icon icon="mdi:account-plus-outline" />}
-                      type="button"
-                      variant="flat"
-                      onPress={() => router.push('/register')}
-                    >
-                      Sign up
-                    </Button>
-                  </div>
-                </div>
-              </Form>
-            </CardBody>
-          </Card>
-        </Loader>
-      </motion.div>
-    </div>
+              </div>
+            </Form>
+          </CardBody>
+        </Card>
+      </Loader>
+    </motion.div>
   );
 };
 

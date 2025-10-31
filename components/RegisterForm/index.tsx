@@ -165,10 +165,10 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen justify-center items-center bg-background text-foreground">
+    <div className="flex justify-center items-center flex-1">
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        className="w-[400px] max-w-full"
         initial={{ opacity: 0, y: 20 }}
       >
         <Loader
