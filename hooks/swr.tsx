@@ -24,7 +24,7 @@ interface WrapperConfig<T>
     title?: string;
     message?: string;
   };
-  ignoreNotification?: boolean;
+  ignoreSuccessNotification?: boolean;
 }
 
 export function useSWRWrapper<T = Record<string, unknown>>(
@@ -37,7 +37,7 @@ export function useSWRWrapper<T = Record<string, unknown>>(
     noEndPoint,
     enable = true,
     notification,
-    ignoreNotification,
+    ignoreSuccessNotification,
     ...config
   }: WrapperConfig<T>,
 ) {
@@ -84,7 +84,7 @@ export function useSWRWrapper<T = Record<string, unknown>>(
         const error: ApiResponse<T> = err as ApiResponse<T>;
 
         config?.onError?.(err, swrKey, config as any);
-        if (notification && !ignoreNotification) {
+        if (notification) {
           addToast({
             title: notification.title,
             description: error?.error?.message,
@@ -94,7 +94,7 @@ export function useSWRWrapper<T = Record<string, unknown>>(
       },
       onSuccess(data, swrKey) {
         config?.onSuccess?.(data, swrKey, config as any);
-        if (notification && !ignoreNotification) {
+        if (notification && !ignoreSuccessNotification) {
           addToast({
             title: notification.title,
             description: notification.message,
@@ -123,7 +123,7 @@ interface MutationConfig<T>
     title?: string;
     message?: string;
   };
-  ignoreNotification?: boolean;
+  ignoreSuccessNotification?: boolean;
 }
 
 export const useMutation = <T = Record<string, unknown>,>(
@@ -134,7 +134,7 @@ export const useMutation = <T = Record<string, unknown>,>(
     noEndpoint,
     resultKey,
     notification,
-    ignoreNotification,
+    ignoreSuccessNotification,
     ...config
   }: MutationConfig<T>,
 ) => {
@@ -192,7 +192,7 @@ export const useMutation = <T = Record<string, unknown>,>(
         const error: ApiResponse<T> = err as ApiResponse<T>;
 
         config?.onError?.(err, swrKey, config as any);
-        if (notification && !ignoreNotification) {
+        if (notification) {
           addToast({
             title: notification.title,
             description: error?.error?.message,
@@ -202,7 +202,7 @@ export const useMutation = <T = Record<string, unknown>,>(
       },
       onSuccess(data, swrKey) {
         config?.onSuccess?.(data, swrKey, config as any);
-        if (notification && !ignoreNotification) {
+        if (notification && !ignoreSuccessNotification) {
           addToast({
             title: notification.title,
             description: notification.message,

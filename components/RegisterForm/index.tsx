@@ -32,14 +32,14 @@ import {
   registerSchema,
 } from './config';
 
-import { useSession } from '@/hooks/auth/useSession';
+import { useAccount } from '@/hooks/auth/useAccount';
 import { useModal } from '@/hooks/useModal';
 import { useFile } from '@/hooks/useFile';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { emailRegex } from '@/common';
 
 const RegisterForm = () => {
-  const { register } = useSession();
+  const { register } = useAccount();
 
   const { checkEmail } = useAuth();
 
@@ -447,7 +447,7 @@ const RegisterForm = () => {
                 />
                 <Button
                   className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                  color="primary"
+                  color="success"
                   radius="lg"
                   type="submit"
                 >

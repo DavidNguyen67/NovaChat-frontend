@@ -8,15 +8,18 @@ import {
   Button,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useRouter } from 'next/navigation';
 
-import { useSession } from '@/hooks/auth/useSession';
+import { useAccount } from '@/hooks/auth/useAccount';
 import { getUrlMedia } from '@/helpers';
 
 const ProfileDropdown = () => {
-  const { sessionInfo } = useSession();
+  const { accountInfo, logout } = useAccount();
+
+  const router = useRouter();
 
   const fallBackChar =
-    sessionInfo?.data?.fullName ?? sessionInfo?.data?.username;
+    accountInfo?.data?.fullName ?? accountInfo?.data?.username;
 
   return (
     <Dropdown placement="bottom-end">
@@ -30,7 +33,7 @@ const ProfileDropdown = () => {
             fallback={fallBackChar?.charAt(0)}
             radius="full"
             size="sm"
-            src={getUrlMedia(sessionInfo?.data?.avatarUrl!)}
+            src={getUrlMedia(accountInfo?.data?.avatarUrl!)}
           />
         </Button>
       </DropdownTrigger>
@@ -38,21 +41,32 @@ const ProfileDropdown = () => {
         aria-label="Profile Actions"
         className="w-[250px]"
         variant="flat"
+        onAction={(key) => {
+          if (key === 'logout') {
+            logout();
+          }
+        }}
       >
-        <DropdownItem key="profile-header">
-          <div className="flex items-center gap-3">
-            <Avatar
-              fallback={fallBackChar?.charAt(0).toUpperCase()}
-              radius="md"
-              size="lg"
-              src={getUrlMedia(sessionInfo?.data?.avatarUrl!)}
-            />
-            <div className="flex flex-col">
+        <DropdownItem
+          key="profile-header"
+          className="w-full"
+          classNames={{
+            title: 'w-full h-full',
+          }}
+        >
+          <div className="flex items-center gap-3 w-full flex-1 h-full">
+            <div className="size-8">
+              <Avatar
+                className="size-8"
+                fallback={fallBackChar?.charAt(0).toUpperCase()}
+                radius="md"
+                size="md"
+                src={getUrlMedia(accountInfo?.data?.avatarUrl!)}
+              />
+            </div>
+            <div className="flex flex-col flex-1 h-full w-full overflow-hidden line-clamp-1">
               <p className="font-semibold text-gray-900 dark:text-gray-100">
                 {fallBackChar || 'Unknown User'}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {sessionInfo?.data?.email || 'No email'}
               </p>
             </div>
           </div>

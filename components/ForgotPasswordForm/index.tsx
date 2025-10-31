@@ -37,7 +37,7 @@ const otpSchema = yup.object({
     .matches(/^\d{6}$/, 'OTP must be 6 digits'),
 });
 
-export default function ForgotPasswordForm() {
+const ForgotPasswordForm = () => {
   const router = useRouter();
 
   const { forgotPassword, verifyOtp } = useAuth();
@@ -291,4 +291,6 @@ export default function ForgotPasswordForm() {
       </motion.div>
     </div>
   );
-}
+};
+
+export default ForgotPasswordForm;

@@ -8,6 +8,7 @@ const publicRoutes = [
   '/api/v1/check-email',
   '/api/v1/forgot-password',
   '/api/v1/verify-otp',
+  '/api/v1/user-info',
 ];
 
 export function middleware(req: NextRequest) {
@@ -27,6 +28,8 @@ export function middleware(req: NextRequest) {
       );
     }
 
+    return NextResponse.next();
+  } else {
     return NextResponse.next();
   }
 }

@@ -27,6 +27,7 @@ export enum METHOD {
   POST = 'POST',
   PUT = 'PUT',
   DELETE = 'DELETE',
+  HEAD = 'HEAD',
 }
 
 export enum NOTIFICATION_TYPE {

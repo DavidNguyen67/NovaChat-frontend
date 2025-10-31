@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { faker } from '@faker-js/faker';
 
 import { NotificationItem } from '@/interfaces/response';
 import { NOTIFICATION_TYPE } from '@/common';

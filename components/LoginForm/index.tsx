@@ -13,10 +13,10 @@ import Loader from '../Loader';
 
 import { LoginFormValues, loginSchema } from './config';
 
-import { useSession } from '@/hooks/auth/useSession';
+import { useAccount } from '@/hooks/auth/useAccount';
 
 const LoginForm = () => {
-  const { login } = useSession();
+  const { login } = useAccount();
   const router = useRouter();
 
   const initialValues = useRef<LoginFormValues>({
@@ -129,6 +129,7 @@ const LoginForm = () => {
                 className="w-full font-semibold text-md shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-transform"
                 color="success"
                 radius="lg"
+                variant="flat"
                 onPress={() => router.push('/register')}
               >
                 <Icon icon="mdi:account-plus-outline" />

@@ -8,11 +8,14 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import React, { useEffect } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import useSWR, { useSWRConfig } from 'swr';
+import useSWR from 'swr';
 import { ToastProvider } from '@heroui/react';
+import Cookies from 'js-cookie';
 
 import { GLOBAL_SOCKET_INIT } from '@/common/global';
 import { initSocket } from '@/helpers/socket';
+import { useAccount } from '@/hooks/auth/useAccount';
+import PreLoader from '@/components/PreLoader';
 
 dayjs.extend(relativeTime);
 
@@ -31,7 +34,9 @@ declare module '@react-types/shared' {
 
 export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
-  const { mutate } = useSWRConfig();
+
+  const { initUser, initUserMutation, accountInfo } = useAccount();
+
   const { data: socketInit } = useSWR(GLOBAL_SOCKET_INIT);
 
   useEffect(() => {
@@ -40,10 +45,26 @@ export function Providers({ children, themeProps }: ProvidersProps) {
     }
   }, [socketInit]);
 
+  useEffect(() => {
+    if (accountInfo?.data == null) {
+      const token = Cookies.get('auth');
+
+      if (token) {
+        initUser(token);
+      }
+    }
+  }, [accountInfo?.data]);
+
   return (
     <HeroUIProvider navigate={router.push}>
       <NextThemesProvider {...themeProps}>
-        {children}
+        {initUserMutation?.isMutating ? (
+          <div className="flex-1 w-full items-center justify-center h-screen">
+            <PreLoader />
+          </div>
+        ) : (
+          children
+        )}
         <ToastProvider maxVisibleToasts={3} placement="top-right" />
       </NextThemesProvider>
     </HeroUIProvider>
