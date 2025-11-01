@@ -9,20 +9,32 @@ import {
 } from '@virtuoso.dev/message-list';
 import { Button, Spinner } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import clsx from 'clsx';
+import { AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { useChatRoom } from '../hook';
 
 import MessageItem from './MessageItem';
 import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
+import { seedMessages } from './config';
 
 import { Message } from '@/interfaces/response';
 import FallBack from '@/components/FallBack';
+import { useAccount } from '@/hooks/auth/useAccount';
 
 const ChatWindow = () => {
   const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null);
 
+  const { accountInfo } = useAccount();
+
   const { messageList, chatRoom } = useChatRoom();
+
+  const memberIds: string[] = [
+    accountInfo?.data?.id ?? '',
+    ...(chatRoom.data?.memberIds ?? []),
+  ];
 
   const [dataView, setDataView] = useState<Message[]>([]);
 
@@ -47,11 +59,20 @@ const ChatWindow = () => {
       }
       querying.current = true;
 
-      const data = await messageList.trigger({});
+      // const data = await messageList.trigger({
+      //   ...(lastTime.current ? { lastTime: lastTime.current } : {}),
+      //   ...(fetchCount.current ? { fetchCount: fetchCount.current } : {}),
+      // });
+
+      const data = seedMessages(
+        chatRoom.data ? [chatRoom.data.id] : [],
+        memberIds,
+        fetchCount.current,
+      );
 
       if (data) {
-        setDataView([...saveLists.current, ...data]);
-        saveLists.current = [...saveLists.current, ...data];
+        setDataView([...data, ...saveLists.current]);
+        saveLists.current = [...data, ...saveLists.current];
 
         if (data.length >= fetchCount.current) {
           hasMore.current = true;
@@ -93,8 +114,8 @@ const ChatWindow = () => {
   };
 
   useEffect(() => {
-    requestData();
-  }, []);
+    refreshData();
+  }, [chatRoom?.data?.id]);
 
   const renderContent = () => {
     if (!dataView.length) {
@@ -110,7 +131,7 @@ const ChatWindow = () => {
           ref={virtuoso}
           EmptyPlaceholder={() => <FallBack type="empty" />}
           Footer={() =>
-            dataView.length &&
+            Boolean(dataView.length) &&
             messageList.isMutating && (
               <div className="py-3 text-center text-gray-500 dark:text-gray-400">
                 <Spinner color="primary" size="sm" />
@@ -132,45 +153,78 @@ const ChatWindow = () => {
     }
   };
 
+  const isActive = Boolean(chatRoom?.data?.id);
+
+  console.log('Check dataView:', { dataView, userId: accountInfo.data?.id });
+
   return (
-    <div className="relative flex flex-col w-full h-full border-default-200 text-white rounded-lg">
-      {chatRoom?.data?.id ? (
-        <>
-          <ChatHeader />
-
-          <VirtuosoMessageListLicense licenseKey="">
-            <div className="p-2 flex-1 flex flex-col overflow-hidden">
-              {renderContent()}
-            </div>
-          </VirtuosoMessageListLicense>
-
-          {isTyping && (
-            <div className="flex items-center gap-2 text-sm text-gray-400 px-5 pb-2">
-              <Icon className="animate-spin" icon="mdi:loading" />
-              <span>Someone is typing...</span>
-            </div>
-          )}
-
-          {!isAtBottom && (
-            <Button
-              isIconOnly
-              className="absolute bottom-[5.5rem] right-4 bg-green-500 hover:bg-green-600 text-white shadow-md rounded-full"
-              size="sm"
-              onPress={handleScrollToBottom}
-            >
-              <Icon className="text-xl" icon="mdi:arrow-down" />
-            </Button>
-          )}
-
-          <ChatInput />
-        </>
-      ) : (
-        <FallBack
-          message="Choose a chat room to start chatting 💬"
-          type="empty"
-        />
+    <motion.div
+      layout
+      animate={{ opacity: 1, y: 0 }}
+      className={clsx(
+        'relative flex flex-col w-full h-full rounded-2xl overflow-hidden border border-white/10 dark:border-white/5 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl shadow-lg transition-all duration-300',
       )}
-    </div>
+      initial={{ opacity: 0, y: 10 }}
+    >
+      <AnimatePresence mode="wait">
+        {isActive ? (
+          <motion.div
+            key="chat-content"
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col flex-1 h-full"
+            exit={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.25 }}
+          >
+            <ChatHeader />
+
+            <VirtuosoMessageListLicense licenseKey="">
+              <div className="p-2 flex-1 flex flex-col overflow-hidden h-full">
+                {renderContent()}
+              </div>
+            </VirtuosoMessageListLicense>
+
+            {isTyping && (
+              <div className="flex items-center gap-2 text-sm text-default-500 px-5 pb-2">
+                <Icon className="animate-spin" icon="mdi:loading" />
+                <span>Someone is typing...</span>
+              </div>
+            )}
+
+            {!isAtBottom && (
+              <Button
+                isIconOnly
+                className="absolute bottom-[5.5rem] right-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md rounded-full hover:scale-105 transition-transform"
+                size="sm"
+                onPress={handleScrollToBottom}
+              >
+                <Icon className="text-xl" icon="mdi:arrow-down" />
+              </Button>
+            )}
+
+            <ChatInput />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="fallback"
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center flex-1 text-center px-8"
+            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 10 }}
+          >
+            <FallBack
+              message={
+                <span>
+                  Choose a chat room to start chatting{' '}
+                  <span className="text-2xl">💬</span>
+                </span>
+              }
+              type="empty"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

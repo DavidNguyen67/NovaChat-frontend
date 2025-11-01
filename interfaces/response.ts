@@ -41,7 +41,7 @@ export interface BaseEntity {
 export interface ChatRoom extends BaseEntity {
   name: string;
   description?: string;
-  members: string[];
+  memberIds: string[];
   messages: string[];
   avatarUrl?: string;
   isPrivate?: boolean;
@@ -55,9 +55,17 @@ export interface ChatRoom extends BaseEntity {
   lastTimestamp?: Date;
 }
 
+export interface Sender
+  extends Omit<BaseEntity, 'createdAt' | 'updatedAt' | 'deletedAt'> {
+  id: string;
+  username: string;
+  fullName?: string;
+  avatarUrl?: string;
+}
+
 export interface Message extends BaseEntity {
   roomId: string;
-  senderId: string;
+  sender: Sender;
   content: string;
   type?: MESSAGE_TYPE;
   attachments?: Attachment[];
@@ -65,7 +73,7 @@ export interface Message extends BaseEntity {
   reactions?: Reaction[];
   isEdited?: boolean;
   editedAt?: string;
-  readBy?: string[];
+  readBy?: Sender[];
   status?: MESSAGE_STATUS;
 }
 

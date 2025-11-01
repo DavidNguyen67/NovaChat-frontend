@@ -7,7 +7,7 @@ import ChatWindow from './ChatWindow';
 
 const ChatBox = () => {
   return (
-    <div className="flex w-full h-full border-2 border-default-200 rounded-lg">
+    <div className="flex w-full h-full border-2 rounded-2xl border-white/30 overflow-hidden backdrop-blur-md shadow-lg">
       <ChatRoomList />
       <ChatWindow />
     </div>

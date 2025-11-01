@@ -7,7 +7,7 @@ import { Button, Spinner } from '@heroui/react';
 interface FallBackProps {
   type?: 'loading' | 'empty' | 'error';
   onRetry?: () => void;
-  message?: string;
+  message?: React.ReactNode;
 }
 
 const FallBack: React.FC<FallBackProps> = ({

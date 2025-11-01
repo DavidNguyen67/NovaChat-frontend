@@ -13,6 +13,7 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
+import clsx from 'clsx';
 
 import { useChatRoom } from '../../hook';
 
@@ -36,20 +37,28 @@ const ChatHeader = () => {
     <>
       <div className="flex items-center justify-between px-4 py-2 rounded-t-lg text-black p-4 border-b border-default-200">
         <div className="flex items-center gap-3">
-          <Avatar
-            isBordered
-            className="mt-[1px]"
-            fallback={chatRoom.data?.name?.charAt(0)}
-            radius="full"
-            size="md"
-            src={getUrlMedia(chatRoom.data?.avatarUrl!)}
-          />
+          <div className="size-10">
+            <Avatar
+              className="size-10"
+              fallback={chatRoom.data?.name?.charAt(0)}
+              radius="full"
+              size="md"
+              src={getUrlMedia(chatRoom.data?.avatarUrl!)}
+            />
+          </div>
 
-          <div className="flex flex-col leading-tight">
+          <div className="flex flex-col leading-tight text-left">
             <span className="font-semibold text-[15px] text-foreground">
               {chatRoom.data?.name}
             </span>
-            <span className="text-xs text-green-400">{status}</span>
+            <span
+              className={clsx('text-xs', {
+                'text-green-400': chatRoom.data?.isOnline,
+                'text-gray-400': !chatRoom.data?.isOnline,
+              })}
+            >
+              {status}
+            </span>
           </div>
         </div>
 

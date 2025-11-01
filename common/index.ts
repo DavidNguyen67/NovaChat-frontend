@@ -2,7 +2,8 @@
 
 export enum CHAT_ROOM_TYPE {
   GROUP = 'group',
-  DIRECT = 'direct',
+  CHANNEL = 'channel',
+  PRIVATE = 'private',
 }
 
 export enum MESSAGE_TYPE {

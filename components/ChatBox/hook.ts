@@ -22,9 +22,15 @@ export const useChatRoom = () => {
     },
   );
 
+  const sendMessage = useMutation<Message>('/api/v1/message', {
+    url: '/api/v1/message',
+    method: METHOD.POST,
+  });
+
   return {
     chatRoom,
     chatRoomList,
     messageList,
+    sendMessage,
   };
 };

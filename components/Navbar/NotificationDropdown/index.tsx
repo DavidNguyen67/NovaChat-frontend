@@ -102,7 +102,7 @@ const NotificationDropdown = () => {
         atTopStateChange={(atTop) => setIsScrollToTop(!atTop)}
         components={{
           Footer: () =>
-            dataView.length &&
+            Boolean(dataView.length) &&
             notificationList.isMutating && (
               <div className="py-3 text-center text-gray-500 dark:text-gray-400">
                 <Spinner color="primary" size="sm" />
