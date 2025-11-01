@@ -10,8 +10,8 @@ import {
   DatePicker,
   Form,
   Input,
-  Radio,
-  RadioGroup,
+  Select,
+  SelectItem,
   Spinner,
 } from '@heroui/react';
 import { useFormik } from 'formik';
@@ -36,7 +36,7 @@ import { useAccount } from '@/hooks/auth/useAccount';
 import { useModal } from '@/hooks/useModal';
 import { useFile } from '@/hooks/useFile';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { emailRegex } from '@/common';
+import { emailRegex } from '@/common/validator';
 
 const RegisterForm = () => {
   const { register } = useAccount();
@@ -64,7 +64,7 @@ const RegisterForm = () => {
     password: '',
     confirmPassword: '',
     dateOfBirth: undefined as any,
-    gender: 'male',
+    gender: undefined as any,
     avatarUrl: undefined,
   });
 
@@ -160,8 +160,6 @@ const RegisterForm = () => {
     );
 
     handleAvatarChange(croppedFile);
-
-    setAvatarPreview(croppedImage);
   };
 
   return (
@@ -170,48 +168,54 @@ const RegisterForm = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-[400px] max-w-full"
         initial={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
       >
         <Loader
-          className="h-[600px] flex flex-col"
+          className="h-[640px] flex flex-col"
           isLoading={formik.isSubmitting}
         >
-          <Card className="shadow-lg rounded-2xl border border-divider bg-content1 backdrop-blur-md transition-colors duration-300 flex flex-col flex-1 overflow-hidden h-full">
-            <div className="p-6 border-b border-divider text-center">
-              <h2 className="text-2xl md:text-3xl font-semibold text-primary">
-                Create an account
+          <Card className="flex flex-col flex-1 overflow-hidden h-full backdrop-blur-xl bg-white/10 dark:bg-gray-800/40 border border-white/20 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl">
+            <div className="p-6 border-b border-white/10 text-center">
+              <h2 className="text-3xl font-bold">
+                <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                  Create an Account
+                </span>
+                ✨
               </h2>
             </div>
 
-            <CardBody className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin scrollbar-thumb-primary/40 scrollbar-track-transparent">
+            <CardBody className="flex-1 overflow-y-auto px-6 py-5 scrollbar-thin scrollbar-thumb-primary/40 scrollbar-track-transparent">
               <Form
                 className="flex flex-col gap-5 pb-3"
                 onSubmit={formik.handleSubmit}
               >
                 <div
                   className={clsx(
-                    'flex flex-col items-center justify-center border-2 rounded-xl p-4 w-fit transition-all mx-auto',
+                    'flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-4 w-fit transition-all mx-auto backdrop-blur-sm bg-white/5 hover:bg-white/10 cursor-pointer',
                     formik?.touched?.avatarFile && formik.errors.avatarFile
-                      ? 'border-pink-500'
+                      ? 'border-pink-500/70'
                       : 'border-transparent',
                   )}
                 >
                   <Avatar
                     className={clsx(
-                      'size-20 cursor-pointer ring-2 transition-all',
+                      'size-20 cursor-pointer ring-2 transition-all duration-300',
                       formik?.touched?.avatarFile && formik.errors.avatarFile
                         ? 'ring-pink-500 hover:ring-pink-400'
                         : 'ring-primary hover:ring-primary/80',
                     )}
                     src={avatarPreview!}
-                    onClick={() => {
+                    onClick={(event) => {
                       if (avatarPreview) cropModal.handleShow(avatarPreview);
                       else avatarInputRef.current?.click();
+                      event.stopPropagation();
+                      event.preventDefault();
                     }}
                   />
 
                   <label
                     className={clsx(
-                      'mt-2 text-sm font-medium cursor-pointer hover:underline',
+                      'mt-2 text-sm font-medium cursor-pointer hover:underline transition-colors',
                       formik?.touched?.avatarFile && formik.errors.avatarFile
                         ? 'text-pink-500'
                         : 'text-primary',
@@ -239,6 +243,7 @@ const RegisterForm = () => {
                     </p>
                   )}
                 </div>
+
                 <Input
                   errorMessage={
                     formik.touched.fullName ? formik.errors.fullName : undefined
@@ -260,21 +265,19 @@ const RegisterForm = () => {
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
                 />
+
                 <Input
                   endContent={
                     formik.values.email &&
-                    !formik.errors.email && (
-                      <>
-                        {checkEmail.isMutating ? (
-                          <Spinner className="text-primary" size="sm" />
-                        ) : checkEmail.error ? null : (
-                          <Icon
-                            className="text-green-500 text-xl"
-                            icon="mdi:check-circle-outline"
-                          />
-                        )}
-                      </>
-                    )
+                    !formik.errors.email &&
+                    (checkEmail.isMutating ? (
+                      <Spinner className="text-primary" size="sm" />
+                    ) : checkEmail.error ? null : (
+                      <Icon
+                        className="text-green-500 text-xl"
+                        icon="mdi:check-circle-outline"
+                      />
+                    ))
                   }
                   errorMessage={
                     formik.touched.email ? formik.errors.email : undefined
@@ -294,6 +297,7 @@ const RegisterForm = () => {
                   onBlur={formik.handleBlur}
                   onChange={handleEmailChange}
                 />
+
                 <Input
                   errorMessage={
                     formik.touched.phoneNumber
@@ -317,6 +321,7 @@ const RegisterForm = () => {
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
                 />
+
                 <DatePicker
                   aria-label="dateOfBirth"
                   errorMessage={
@@ -327,17 +332,17 @@ const RegisterForm = () => {
                   isInvalid={
                     !!(formik.touched.dateOfBirth && formik.errors.dateOfBirth)
                   }
+                  label="Date of Birth"
                   maxValue={today(getLocalTimeZone())}
-                  name="dateOfBirth"
                   radius="lg"
                   selectorButtonPlacement="start"
                   selectorIcon={
-                    <span className="text-primary">
+                    <div className="text-primary text-xl">
                       <Icon
                         className="text-primary text-xl"
                         icon="mdi:calendar-month-outline"
                       />
-                    </span>
+                    </div>
                   }
                   value={formik.values.dateOfBirth as any}
                   variant="bordered"
@@ -347,10 +352,12 @@ const RegisterForm = () => {
                     formik.setFieldValue('dateOfBirth', value)
                   }
                 />
-                <RadioGroup
+
+                <Select
+                  aria-label="gender"
                   classNames={{
-                    wrapper: 'justify-start gap-3',
-                    base: 'w-full',
+                    trigger:
+                      'border-default-200 hover:border-default-400 cursor-pointer',
                   }}
                   errorMessage={
                     formik.touched.gender ? formik.errors.gender : undefined
@@ -358,14 +365,33 @@ const RegisterForm = () => {
                   isInvalid={!!(formik.touched.gender && formik.errors.gender)}
                   label="Select your gender"
                   name="gender"
-                  orientation="horizontal"
-                  value={formik.values.gender}
-                  onChange={formik.handleChange}
+                  placeholder="Choose your gender"
+                  radius="lg"
+                  selectedKeys={
+                    formik.values.gender ? [formik.values.gender] : []
+                  }
+                  selectorIcon={<span />}
+                  startContent={
+                    <div className="text-primary text-xl">
+                      <Icon
+                        className="text-primary text-xl"
+                        icon="mdi:gender-male-female"
+                      />
+                    </div>
+                  }
+                  variant="bordered"
+                  onBlur={() => formik.setFieldTouched('gender', true)}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+
+                    formik.setFieldValue('gender', selected);
+                  }}
                 >
-                  <Radio value="male">Male</Radio>
-                  <Radio value="female">Female</Radio>
-                  <Radio value="other">Other</Radio>
-                </RadioGroup>
+                  <SelectItem key="male">Male</SelectItem>
+                  <SelectItem key="female">Female</SelectItem>
+                  <SelectItem key="other">Other</SelectItem>
+                </Select>
+
                 <Input
                   endContent={
                     <button
@@ -403,6 +429,7 @@ const RegisterForm = () => {
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
                 />
+
                 <Input
                   endContent={
                     <button
@@ -445,9 +472,10 @@ const RegisterForm = () => {
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
                 />
+
                 <Button
-                  className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                  color="success"
+                  className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                  color="primary"
                   radius="lg"
                   type="submit"
                 >
@@ -457,7 +485,7 @@ const RegisterForm = () => {
               </Form>
             </CardBody>
 
-            <div className="p-4 border-t border-divider text-center text-sm">
+            <div className="p-4 border-t border-white/10 text-center text-sm text-gray-500 dark:text-gray-400">
               Already have an account?{' '}
               <Link
                 className="text-primary font-medium hover:underline"

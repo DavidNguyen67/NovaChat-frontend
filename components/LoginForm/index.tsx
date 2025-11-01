@@ -41,14 +41,18 @@ const LoginForm = () => {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
-      className="w-[400px] max-w-full"
-      initial={{ opacity: 0, y: 20 }}
+      className="w-full max-w-md"
+      initial={{ opacity: 0, y: 30 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <Loader className="w-full h-full" isLoading={formik.isSubmitting}>
-        <Card className="shadow-lg rounded-2xl border border-divider bg-content1 backdrop-blur-md transition-colors duration-300">
-          <CardBody className="p-8 flex flex-col gap-5">
-            <h2 className="text-2xl md:text-3xl font-semibold text-center text-primary">
-              Welcome back
+      <Loader isLoading={formik.isSubmitting}>
+        <Card className="backdrop-blur-xl bg-white/10 dark:bg-gray-800/40 border border-white/20 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl">
+          <CardBody className="p-8 flex flex-col gap-6">
+            <h2 className="text-3xl font-bold text-center">
+              <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                Welcome back
+              </span>
+              👋
             </h2>
 
             <Form
@@ -56,6 +60,7 @@ const LoginForm = () => {
               onSubmit={formik.handleSubmit}
             >
               <Input
+                className="backdrop-blur-md"
                 errorMessage={
                   formik.touched.username ? formik.errors.username : undefined
                 }
@@ -63,7 +68,7 @@ const LoginForm = () => {
                   !!(formik.touched.username && formik.errors.username)
                 }
                 name="username"
-                placeholder="Full name"
+                placeholder="Username"
                 radius="lg"
                 startContent={
                   <Icon
@@ -101,9 +106,8 @@ const LoginForm = () => {
               />
 
               <Button
-                className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform bg-gradient-to-r from-blue-500 to-purple-500 text-white"
                 color="primary"
-                disabled={formik.isSubmitting}
                 isLoading={formik.isSubmitting}
                 radius="lg"
                 type="submit"
@@ -113,20 +117,20 @@ const LoginForm = () => {
               </Button>
             </Form>
 
-            <div className="text-center mt-2">
+            <div className="text-center">
               <Link
-                className="text-primary text-sm font-medium hover:underline"
+                className="text-sm font-medium text-primary hover:underline"
                 href="/forgot-password"
               >
-                Forgotten password?
+                Forgot your password?
               </Link>
             </div>
 
-            <div className="border-b border-divider my-3" />
+            <div className="border-t border-white/10 my-3" />
 
             <Button
-              className="w-full font-semibold text-md shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-transform"
-              color="success"
+              className="w-full font-semibold text-md shadow-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
+              color="secondary"
               radius="lg"
               variant="flat"
               onPress={() => router.push('/register')}

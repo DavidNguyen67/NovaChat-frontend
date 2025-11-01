@@ -1,7 +1,5 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable prettier/prettier */
-/* eslint-disable react/no-unescaped-entities */
+
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -16,8 +14,8 @@ import Loader from '../Loader';
 import { ForgotPasswordFormValues, FORM_STEP } from './config';
 
 import { useAuth } from '@/hooks/auth/useAuth';
-import { emailRegex, phoneRegex } from '@/common';
 import { ApiResponse } from '@/interfaces';
+import { emailRegex, phoneRegex } from '@/common/validator';
 
 const searchSchema = yup.object({
   username: yup
@@ -132,45 +130,54 @@ const ForgotPasswordForm = () => {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
-      className="w-[400px] max-w-full"
+      className="relative w-full max-w-md"
       initial={{ opacity: 0, y: 20 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
     >
+      <button
+        className="absolute -top-10 left-0 flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition cursor-pointer hover:underline"
+        onClick={() => router.push('/login')}
+      >
+        <Icon className="text-base" icon="mdi:arrow-left" />
+        Back to login
+      </button>
+
       <Loader isLoading={formik.isSubmitting || forgotPassword.isMutating}>
-        <Card className="shadow-lg rounded-2xl border border-divider bg-content1 backdrop-blur-md">
-          <CardBody className="p-8 flex flex-col gap-5">
-            <div className="flex w-full relative">
-              {step === FORM_STEP.OTP && (
-                <div
-                  className="absolute top-0 left-0 transform -translate-y-1/2 cursor-pointer flex items-center gap-1"
-                  onClick={() => setStep(FORM_STEP.SEARCH)}
-                >
-                  <Icon icon="mdi:arrow-left" />
-                  Back
-                </div>
-              )}
-
-              <h2 className="text-2xl font-semibold text-primary text-center w-full">
+        <Card className="rounded-2xl border border-white/20 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl shadow-xl transition-all duration-300">
+          <CardBody className="p-8 flex flex-col gap-3">
+            <h2 className="text-3xl font-extrabold text-center">
+              <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                 {step === FORM_STEP.SEARCH
-                  ? 'Find Your Account'
-                  : 'Enter OTP Code'}
-              </h2>
-            </div>
+                  ? 'Forgot your password?'
+                  : 'Verify your identity'}
+              </span>
+            </h2>
 
-            {step === FORM_STEP.SEARCH ? (
-              <p className="text-center text-sm text-default-500">
-                Please enter your email address or mobile number to search for
-                your account.
-              </p>
-            ) : (
-              <p className="text-center text-sm text-default-500">
-                We've sent a 6-digit OTP to{' '}
-                <span className="font-medium">{userIdentifier}</span>.
-              </p>
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              {step === FORM_STEP.SEARCH
+                ? 'Enter your email or phone number to receive an OTP verification code.'
+                : `We’ve sent a 6-digit OTP to `}
+              {step === FORM_STEP.OTP && (
+                <span className="font-medium text-default-700">
+                  {userIdentifier}
+                </span>
+              )}
+            </p>
+
+            {step === FORM_STEP.OTP && (
+              <Button
+                className="mx-auto -mt-2"
+                color="primary"
+                size="sm"
+                variant="light"
+                onPress={() => setStep(FORM_STEP.SEARCH)}
+              >
+                Change email / phone
+              </Button>
             )}
 
             <Form
-              className="flex flex-col gap-4 items-end"
+              className="flex flex-col gap-5"
               onSubmit={formik.handleSubmit}
             >
               {step === FORM_STEP.SEARCH ? (
@@ -196,13 +203,14 @@ const ForgotPasswordForm = () => {
                   onChange={formik.handleChange}
                 />
               ) : (
-                <div className="flex flex-col gap-2 w-full">
+                <div className="flex flex-col gap-3 w-full items-center justify-center">
                   <InputOtp
                     classNames={{
-                      base: 'w-full items-center justify-center',
-                      errorMessage: 'font-bold text-sm',
+                      base: 'justify-center mx-auto',
                       segmentWrapper: 'p-0',
+                      errorMessage: 'font-bold text-sm text-center',
                     }}
+                    containerClassName="w-full items-center justify-center"
                     errorMessage={
                       formik.touched.otp ? formik.errors.otp : undefined
                     }
@@ -233,9 +241,9 @@ const ForgotPasswordForm = () => {
                 </div>
               )}
 
-              <div className="flex items-center justify-center w-full">
+              <div className="flex justify-end w-full">
                 <Button
-                  className="font-semibold text-base min-w-[8rem]"
+                  className="font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform bg-gradient-to-r from-blue-500 to-purple-500 text-white"
                   color="primary"
                   isLoading={formik.isSubmitting}
                   radius="lg"
@@ -250,34 +258,6 @@ const ForgotPasswordForm = () => {
                 >
                   {step === FORM_STEP.SEARCH ? 'Search' : 'Verify'}
                 </Button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-3 w-full">
-                <div className="flex items-center justify-center gap-3">
-                  <Button
-                    className="font-semibold text-base"
-                    color="warning"
-                    radius="lg"
-                    startContent={<Icon icon="mdi:login" />}
-                    type="button"
-                    variant="flat"
-                    onPress={() => router.push('/login')}
-                  >
-                    Log in
-                  </Button>
-
-                  <Button
-                    className="font-semibold text-base"
-                    color="success"
-                    radius="lg"
-                    startContent={<Icon icon="mdi:account-plus-outline" />}
-                    type="button"
-                    variant="flat"
-                    onPress={() => router.push('/register')}
-                  >
-                    Sign up
-                  </Button>
-                </div>
               </div>
             </Form>
           </CardBody>

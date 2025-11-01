@@ -11,7 +11,6 @@ const LandingPage = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Hero Section */}
       <motion.div
         animate={{ opacity: 1, y: 0 }}
         className="max-w-3xl w-full mb-16"

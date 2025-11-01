@@ -2,6 +2,7 @@
 
 import {
   CHAT_ROOM_TYPE,
+  GENDER,
   MESSAGE_STATUS,
   MESSAGE_TYPE,
   NOTIFICATION_TYPE,
@@ -77,7 +78,7 @@ export interface User extends BaseEntity {
   avatarUrl?: string;
   coverUrl?: string;
   bio?: string;
-  gender?: 'male' | 'female' | 'other';
+  gender?: GENDER;
   dateOfBirth?: Date;
   isOnline?: boolean;
   lastActiveAt?: Date;

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import * as yup from 'yup';
 
-import { commonSchema, emailRegex, phoneRegex } from '@/common';
+import { commonSchema, emailRegex, phoneRegex } from '@/common/validator';
 
 export const loginSchema = yup.object({
   username: yup

@@ -2,7 +2,8 @@
 import { CalendarDate } from '@heroui/react';
 import * as yup from 'yup';
 
-import { commonSchema } from '@/common';
+import { GENDER } from '@/common';
+import { commonSchema } from '@/common/validator';
 
 export const registerSchema = yup.object({
   fullName: commonSchema.fullName,
@@ -12,9 +13,9 @@ export const registerSchema = yup.object({
   confirmPassword: commonSchema.confirmPassword(),
   dateOfBirth: commonSchema.dateOfBirth,
   gender: yup
-    .mixed<'male' | 'female' | 'other'>()
-    .oneOf(['male', 'female', 'other'], 'Invalid gender')
-    .nullable(),
+    .mixed<GENDER>()
+    .oneOf(Object.values(GENDER), 'Invalid gender')
+    .required(),
   avatarUrl: yup.string().url('Invalid avatar URL').nullable(),
   bio: yup.string().max(300, 'Bio must be under 300 characters').optional(),
   avatarFile: commonSchema.avatarFile,
