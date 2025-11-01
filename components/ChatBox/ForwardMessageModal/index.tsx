@@ -27,13 +27,14 @@ import FallBack from '@/components/FallBack';
 import { getUrlMedia } from '@/helpers';
 
 export const ForwardMessageModal: React.FC = () => {
-  const { chatRoom, forwardModal, chatRoomList } = useChatRoom();
+  const { chatRoom, chatRoomList, selectedMode, clearSelectModal } =
+    useChatRoom();
 
   const [searchValue, setSearchValue] = useState('');
 
   const [dataView, setDataView] = useState<ChatRoom[]>([]);
 
-  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+  const [selectedRooms, setSelectedRooms] = useState<ChatRoom[]>([]);
 
   const searchKey = useRef('');
 
@@ -52,13 +53,6 @@ export const ForwardMessageModal: React.FC = () => {
   const [isShowScrollToTop, setIsShowScrollToTop] = useState(false);
 
   const debounceSearch = useDebounceCallBack(() => refreshData(), 300);
-
-  const onClose = () => {
-    forwardModal.mutate({ isOpen: false, message: undefined });
-  };
-
-  const onOpenChange = (isOpen: boolean) =>
-    forwardModal.mutate({ isOpen, message: forwardModal.data?.message });
 
   const handleScrollToTop = () => {
     virtuoso.current?.scrollToIndex({
@@ -107,17 +101,19 @@ export const ForwardMessageModal: React.FC = () => {
     debounceSearch();
   }, [chatRoom?.data?.id, searchValue]);
 
-  const toggleSelectRoom = (id: string) => {
+  const handleSelectRoom = (room: ChatRoom) => {
     setSelectedRooms((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+      prev.some((r) => r.id === room.id)
+        ? prev.filter((r) => r.id !== room.id)
+        : [...prev, room],
     );
   };
 
-  const handleSubmitForward = () => {
-    console.log('Forward message:', forwardModal.data?.message);
+  const onConfirm = () => {
+    console.log('Forward message:', selectedMode?.data?.selectedMessages);
     console.log('To rooms:', selectedRooms);
     setSelectedRooms([]);
-    onClose();
+    clearSelectModal();
   };
 
   const renderContent = () => {
@@ -145,8 +141,8 @@ export const ForwardMessageModal: React.FC = () => {
         }}
         data={dataView}
         endReached={requestData}
-        itemContent={(index, item) => {
-          const isSelected = selectedRooms.includes(item.id);
+        itemContent={(_, item) => {
+          const isSelected = selectedRooms.some((room) => room.id === item.id);
 
           return (
             <motion.button
@@ -159,7 +155,7 @@ export const ForwardMessageModal: React.FC = () => {
               transition={{ duration: 0.1 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.96 }}
-              onClick={() => toggleSelectRoom(item.id)}
+              onClick={() => handleSelectRoom(item)}
             >
               <div className="size-10">
                 <Avatar
@@ -194,8 +190,21 @@ export const ForwardMessageModal: React.FC = () => {
     );
   };
 
+  const isOpen = selectedMode?.data?.isOpenModal;
+
+  const mode = selectedMode?.data?.mode;
+
+  const onOpenChange = (isOpen: boolean) => {
+    selectedMode.mutate({
+      isOpenModal: isOpen,
+      selectedMessages: selectedMode?.data?.selectedMessages || [],
+      mode: selectedMode?.data?.mode,
+      isSelectMode: selectedMode?.data?.isSelectMode,
+    });
+  };
+
   return (
-    <Modal isOpen={forwardModal?.data?.isOpen} onOpenChange={onOpenChange}>
+    <Modal isOpen={isOpen && mode === 'forward'} onOpenChange={onOpenChange}>
       <ModalContent className="bg-[#1e1f22] text-white">
         {(onClose) => (
           <>
@@ -236,28 +245,27 @@ export const ForwardMessageModal: React.FC = () => {
               <div className="relative h-[400px] w-full">
                 <div className="flex-1 overflow-y-auto flex flex-col gap-2 h-full w-full relative text-gray-800 dark:text-gray-100">
                   {renderContent()}
-                </div>
-
-                <AnimatePresence>
-                  {isShowScrollToTop && (
-                    <motion.div
-                      animate={{ opacity: 1, y: 0 }}
-                      className="absolute bottom-[2.5rem] right-4"
-                      exit={{ opacity: 0, y: 10 }}
-                      initial={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Button
-                        isIconOnly
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 transition-transform"
-                        size="sm"
-                        onPress={handleScrollToTop}
+                  <AnimatePresence>
+                    {isShowScrollToTop && (
+                      <motion.div
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute top-8 right-4"
+                        exit={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <Icon className="text-xl" icon="mdi:arrow-up" />
-                      </Button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        <Button
+                          isIconOnly
+                          className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 transition-transform"
+                          size="sm"
+                          onPress={handleScrollToTop}
+                        >
+                          <Icon className="text-xl" icon="mdi:arrow-up" />
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </ModalBody>
 
@@ -269,7 +277,7 @@ export const ForwardMessageModal: React.FC = () => {
                 className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
                 color="primary"
                 isDisabled={!selectedRooms.length}
-                onPress={handleSubmitForward}
+                onPress={onConfirm}
               >
                 <Icon className="mr-1 text-lg" icon="mdi:send" />
                 Forward ({selectedRooms.length})

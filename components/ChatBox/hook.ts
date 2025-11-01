@@ -1,53 +1,87 @@
 /* eslint-disable prettier/prettier */
 import useSWR from 'swr';
 
-import { DeleteModeData, ForwardModalData } from './config';
+import { SelectedModeData } from './config';
 
 import {
   GLOBAL_CHAT_ROOM_KEY,
-  CHAT_FORWARD_MODAL,
-  CHAT_DELETE_MODE,
+  GLOBAL_SELECTED_MODE_CHAT,
 } from '@/common/global';
 import { ChatRoom, Message } from '@/interfaces/response';
 import { useMutation } from '@/hooks/swr';
 import { METHOD } from '@/common';
-import { useAccount } from '@/hooks/auth/useAccount';
 
 export const useChatRoom = () => {
-  const { accountInfo } = useAccount();
-
   const chatRoom = useSWR<ChatRoom>(GLOBAL_CHAT_ROOM_KEY);
 
-  const forwardModal = useSWR<ForwardModalData>(CHAT_FORWARD_MODAL);
+  const selectedMode = useSWR<SelectedModeData>(GLOBAL_SELECTED_MODE_CHAT);
 
-  const deleteMode = useSWR<DeleteModeData>(CHAT_DELETE_MODE);
+  const openSelectModal = (mode: 'delete' | 'forward' | 'unknown') => {
+    selectedMode.mutate({
+      isOpenModal: true,
+      selectedMessages: selectedMode.data?.selectedMessages || [],
+      mode,
+      isSelectMode: true,
+    });
+  };
 
-  const handleSelectDeleteMessage = (message: Message) => {
-    if (!deleteMode.data?.isDeleteMode) return;
-    if (accountInfo.data?.id !== message.sender?.id) return;
+  const clearSelectModal = () => {
+    selectedMode.mutate({
+      isOpenModal: false,
+      selectedMessages: [],
+      isSelectMode: false,
+      mode: 'unknown',
+    });
+  };
 
-    const isSelected = deleteMode.data.selectedMessages.some(
-      (m) => m.id === message.id,
+  const toggleSelectMode = (
+    mode: 'delete' | 'forward' | 'unknown',
+    message?: Message,
+  ) => {
+    selectedMode.mutate({
+      isSelectMode: !selectedMode.data?.isSelectMode,
+      selectedMessages: message ? [message] : [],
+      mode,
+    });
+  };
+
+  const handleSelectMessage = (message: Message) => {
+    const isSelected = selectedMode.data?.selectedMessages.some(
+      (msg) => msg.id === message.id,
     );
+
     let updatedSelectedMessages: Message[] = [];
 
     if (isSelected) {
-      updatedSelectedMessages = deleteMode.data.selectedMessages.filter(
-        (m) => m.id !== message.id,
-      );
+      updatedSelectedMessages = selectedMode.data?.selectedMessages.filter(
+        (msg) => msg.id !== message.id,
+      ) as Message[];
     } else {
-      updatedSelectedMessages = [...deleteMode.data.selectedMessages, message];
+      updatedSelectedMessages = [
+        ...(selectedMode.data?.selectedMessages || []),
+        message,
+      ];
     }
-    deleteMode.mutate({
-      ...deleteMode.data,
+
+    if (updatedSelectedMessages?.length === 0) {
+      selectedMode.mutate({
+        isSelectMode: false,
+        selectedMessages: [],
+      });
+
+      return;
+    }
+
+    selectedMode.mutate({
+      isSelectMode: true,
+      mode: selectedMode?.data?.mode,
       selectedMessages: updatedSelectedMessages,
     });
   };
 
-  const handleResetDeleteMode = () => {
-    deleteMode.mutate({
-      ...deleteMode?.data,
-      isDeleteMode: false,
+  const handleResetSelectMode = () => {
+    selectedMode.mutate({
+      isSelectMode: false,
       selectedMessages: [],
     });
   };
@@ -84,10 +118,12 @@ export const useChatRoom = () => {
     chatRoomList,
     messageList,
     sendMessage,
-    forwardModal,
-    deleteMode,
-    handleSelectDeleteMessage,
-    handleResetDeleteMode,
     deleteMessages,
+    toggleSelectMode,
+    handleSelectMessage,
+    handleResetSelectMode,
+    selectedMode,
+    openSelectModal,
+    clearSelectModal,
   };
 };

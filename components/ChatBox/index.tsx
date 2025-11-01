@@ -5,6 +5,7 @@ import React from 'react';
 import ChatRoomList from './ChatRoomList';
 import ChatWindow from './ChatWindow';
 import { ForwardMessageModal } from './ForwardMessageModal';
+import DeleteMessageModal from './DeleteMessageModal';
 
 const ChatBox = () => {
   return (
@@ -12,6 +13,7 @@ const ChatBox = () => {
       <ChatRoomList />
       <ChatWindow />
       <ForwardMessageModal />
+      <DeleteMessageModal />
     </div>
   );
 };

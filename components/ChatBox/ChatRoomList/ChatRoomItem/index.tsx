@@ -24,7 +24,7 @@ const ChatRoomItem = (props: ChatRoomItemProps) => {
     <motion.div
       animate={{ opacity: 1, y: 0 }}
       className={clsx(
-        'flex items-center gap-3 p-3 rounded-2xl cursor-pointer select-none transition-all duration-300 mb-1 mr-2',
+        'flex items-center gap-3 p-3 rounded-2xl cursor-pointer select-none transition-all duration-300 mb-1.5 mr-2 ml-4',
         'hover:shadow-md hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-800 dark:hover:to-gray-900',
         isSelected
           ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 border border-blue-400/30'
@@ -32,7 +32,7 @@ const ChatRoomItem = (props: ChatRoomItemProps) => {
       )}
       initial={{ opacity: 0, y: 5 }}
       transition={{ duration: 0.25 }}
-      whileHover={{ scale: 1.015 }}
+      whileHover={{ scale: 1.01 }}
       onClick={() => chatRoom?.mutate(props.data)}
     >
       <div className="relative shrink-0 size-14">

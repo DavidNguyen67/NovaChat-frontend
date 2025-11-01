@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @config "../tailwind.config.js";
 
-/* 🌿 Scrollbar đẹp và tinh tế */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -12,26 +11,32 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-500/40 rounded-full;
-  transition: background-color 0.2s ease;
+  background-color: rgba(120, 120, 120, 0.25);
+  border-radius: 9999px;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-500/60;
+  background-color: rgba(120, 120, 120, 0.45);
 }
 
-/* Firefox support */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+  scrollbar-color: rgba(120, 120, 120, 0.25) transparent;
 }
 
-/* 🌗 Dark mode tinh chỉnh */
 .dark ::-webkit-scrollbar-thumb {
-  @apply bg-slate-400/30;
+  background-color: rgba(200, 200, 200, 0.2);
 }
+
 .dark ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400/60;
+  background-color: rgba(200, 200, 200, 0.45);
+}
+
+.dark * {
+  scrollbar-color: rgba(200, 200, 200, 0.25) transparent;
 }
 
 @keyframes fadeIn {

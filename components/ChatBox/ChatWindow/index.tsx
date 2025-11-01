@@ -7,18 +7,7 @@ import {
   VirtuosoMessageListLicense,
   VirtuosoMessageListMethods,
 } from '@virtuoso.dev/message-list';
-import {
-  Button,
-  Card,
-  Divider,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Spinner,
-  useDisclosure,
-} from '@heroui/react';
+import { Button, Card, Divider, Spinner } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 import { AnimatePresence } from 'framer-motion';
@@ -36,8 +25,6 @@ import FallBack from '@/components/FallBack';
 import { useAccount } from '@/hooks/auth/useAccount';
 
 const ChatWindow = () => {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
   const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null);
 
   const { accountInfo } = useAccount();
@@ -45,22 +32,10 @@ const ChatWindow = () => {
   const {
     messageList,
     chatRoom,
-    deleteMode,
-    handleResetDeleteMode,
-    deleteMessages,
+    selectedMode,
+    handleResetSelectMode,
+    openSelectModal,
   } = useChatRoom();
-
-  const handleDeleteMessages = () => {
-    try {
-      const messageIds =
-        deleteMode?.data?.selectedMessages.map((m) => m.id) || [];
-
-      return deleteMessages.trigger({ messageIds });
-    } catch (error) {}
-    handleResetDeleteMode();
-  };
-
-  const selectedMessages = deleteMode?.data?.selectedMessages || [];
 
   const memberIds: string[] = [
     accountInfo?.data?.id ?? '',
@@ -187,14 +162,12 @@ const ChatWindow = () => {
 
   const isActive = Boolean(chatRoom?.data?.id);
 
-  const isDeleteMode = deleteMode?.data?.isDeleteMode;
-
   return (
     <motion.div
       layout
       animate={{ opacity: 1, y: 0 }}
       className={clsx(
-        'relative flex flex-col w-full h-full rounded-2xl overflow-hidden border border-white/10 dark:border-white/5 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl shadow-lg transition-all duration-300',
+        'relative flex flex-col w-full h-full rounded-tr-2xl rounded-br-2xl overflow-hidden border border-white/10 dark:border-white/5 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl shadow-lg transition-all duration-300',
       )}
       initial={{ opacity: 0, y: 10 }}
     >
@@ -214,9 +187,9 @@ const ChatWindow = () => {
               <div className="py-2 flex-1 flex flex-col overflow-hidden h-full">
                 {renderContent()}
               </div>
-              {isDeleteMode && (
+              {selectedMode?.data?.isSelectMode && (
                 <AnimatePresence>
-                  {selectedMessages.length > 0 && (
+                  {selectedMode?.data?.selectedMessages?.length > 0 && (
                     <motion.div
                       key="delete-toolbar"
                       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -234,7 +207,7 @@ const ChatWindow = () => {
                       >
                         <span className="text-sm text-default-500">
                           <span className="font-semibold text-foreground">
-                            {selectedMessages.length}{' '}
+                            {selectedMode?.data?.selectedMessages?.length}{' '}
                           </span>
                           selected
                         </span>
@@ -244,28 +217,66 @@ const ChatWindow = () => {
                           orientation="vertical"
                         />
 
-                        <Button
-                          className="font-medium hover:scale-105 transition-transform"
-                          color="danger"
-                          size="sm"
-                          startContent={
-                            <Icon
-                              className="text-lg"
-                              icon="mdi:delete-outline"
-                            />
-                          }
-                          variant="flat"
-                          onPress={onOpen}
-                        >
-                          Delete
-                        </Button>
+                        {(selectedMode?.data?.mode === 'unknown' ||
+                          selectedMode?.data?.mode === 'forward') && (
+                          <Button
+                            className="font-medium hover:scale-105 transition-transform"
+                            color="primary"
+                            size="sm"
+                            startContent={
+                              <Icon
+                                className="text-lg"
+                                icon="mdi:forward-outline"
+                              />
+                            }
+                            variant="flat"
+                            onPress={() =>
+                              openSelectModal(
+                                selectedMode?.data?.mode === 'unknown'
+                                  ? 'unknown'
+                                  : 'forward',
+                              )
+                            }
+                          >
+                            Forward
+                          </Button>
+                        )}
+                        {(selectedMode?.data?.mode === 'unknown' ||
+                          selectedMode?.data?.mode === 'delete') && (
+                          <Button
+                            className="font-medium hover:scale-105 transition-transform"
+                            color="danger"
+                            size="sm"
+                            startContent={
+                              <Icon
+                                className="text-lg"
+                                icon="mdi:delete-outline"
+                              />
+                            }
+                            variant="flat"
+                            onPress={() =>
+                              openSelectModal(
+                                selectedMode?.data?.mode === 'unknown'
+                                  ? 'unknown'
+                                  : 'delete',
+                              )
+                            }
+                          >
+                            Delete
+                          </Button>
+                        )}
+
+                        <Divider
+                          className="h-5 bg-default-300/40"
+                          orientation="vertical"
+                        />
 
                         <Button
                           className="text-default-500 hover:text-foreground hover:scale-105 transition-transform"
                           color="default"
                           size="sm"
                           variant="light"
-                          onPress={handleResetDeleteMode}
+                          onPress={handleResetSelectMode}
                         >
                           Cancel
                         </Button>
@@ -284,14 +295,22 @@ const ChatWindow = () => {
             )}
 
             {!isAtBottom && (
-              <Button
-                isIconOnly
-                className="absolute bottom-[5.5rem] right-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md rounded-full hover:scale-105 transition-transform"
-                size="sm"
-                onPress={handleScrollToBottom}
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute bottom-24 right-4"
+                exit={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
               >
-                <Icon className="text-xl" icon="mdi:arrow-down" />
-              </Button>
+                <Button
+                  isIconOnly
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 transition-transform"
+                  size="sm"
+                  onPress={handleScrollToBottom}
+                >
+                  <Icon className="text-xl" icon="mdi:arrow-down" />
+                </Button>
+              </motion.div>
             )}
 
             <ChatInput />
@@ -316,55 +335,6 @@ const ChatWindow = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex items-center gap-2">
-                <Icon
-                  className="text-danger text-2xl"
-                  icon="mdi:alert-circle-outline"
-                />
-                <span className="font-semibold text-lg">Delete Messages</span>
-              </ModalHeader>
-
-              <ModalBody>
-                <p className="text-default-500 text-sm">
-                  Are you sure you want to delete{' '}
-                  <span className="font-semibold text-foreground">
-                    {selectedMessages.length}
-                  </span>{' '}
-                  {selectedMessages.length > 1 ? 'messages' : 'message'}? <br />
-                  This action cannot be undone.
-                </p>
-              </ModalBody>
-
-              <ModalFooter>
-                <Button
-                  className="hover:opacity-80"
-                  color="default"
-                  variant="light"
-                  onPress={onClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="font-medium"
-                  color="danger"
-                  startContent={<Icon icon="mdi:trash-can-outline" />}
-                  onPress={() => {
-                    handleDeleteMessages();
-                    onClose();
-                  }}
-                >
-                  Delete
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
     </motion.div>
   );
 };

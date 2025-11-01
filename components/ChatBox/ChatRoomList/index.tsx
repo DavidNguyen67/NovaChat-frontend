@@ -136,8 +136,8 @@ const ChatRoomList = () => {
   };
 
   return (
-    <div className=" flex flex-col gap-4 w-100 p-4 relative border-r border-white/30 dark:border-white/10 bg-white/60 dark:bg-white/10 backdrop-blur-md shadow-sm transition-all duration-300 pr-0">
-      <div className="flex items-center gap-2 pr-4">
+    <div className=" flex flex-col gap-4 w-100 p-4 relative pl-0 border-r border-white/30 dark:border-white/10 bg-white/60 dark:bg-white/10 backdrop-blur-md shadow-sm transition-all duration-300 pr-0">
+      <div className="flex items-center gap-2 mx-4">
         <h2 className="text-lg font-semibold flex items-center gap-1 text-gray-800 dark:text-gray-100">
           💬 Chats
         </h2>
@@ -153,7 +153,7 @@ const ChatRoomList = () => {
         </Button>
       </div>
 
-      <div className="flex items-center gap-2 relative overflow-hidden pr-4">
+      <div className="flex items-center gap-2 relative overflow-hidden mx-4">
         <AnimatePresence initial={false} mode="popLayout">
           {isSearchOpen && (
             <motion.div
@@ -218,28 +218,28 @@ const ChatRoomList = () => {
 
       <div className="flex-1 overflow-y-auto flex flex-col gap-2 h-full relative text-gray-800 dark:text-gray-100">
         {renderContent()}
-      </div>
 
-      <AnimatePresence>
-        {isShowScrollToTop && (
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute bottom-[5.5rem] right-4"
-            exit={{ opacity: 0, y: 10 }}
-            initial={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Button
-              isIconOnly
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 transition-transform"
-              size="sm"
-              onPress={handleScrollToTop}
+        <AnimatePresence>
+          {isShowScrollToTop && (
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute top-8 right-4"
+              exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
-              <Icon className="text-xl" icon="mdi:arrow-up" />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <Button
+                isIconOnly
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 transition-transform"
+                size="sm"
+                onPress={handleScrollToTop}
+              >
+                <Icon className="text-xl" icon="mdi:arrow-up" />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };

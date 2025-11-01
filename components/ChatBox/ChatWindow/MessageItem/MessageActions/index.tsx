@@ -6,24 +6,25 @@ import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 
 import { Message } from '@/interfaces/response';
+import { useAccount } from '@/hooks/auth/useAccount';
 import { useChatRoom } from '@/components/ChatBox/hook';
 
 interface MessageActionsProps {
-  isSelf?: boolean;
   show?: boolean;
   msg: Message;
 }
 
 export const MessageActions: React.FC<MessageActionsProps> = ({
-  isSelf,
   show,
   msg,
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const { deleteMode } = useChatRoom();
+  const { accountInfo } = useAccount();
 
-  const { forwardModal } = useChatRoom();
+  const isSelf = msg.sender?.id === accountInfo?.data?.id;
+
+  const { toggleSelectMode } = useChatRoom();
 
   const [showReactions, setShowReactions] = useState(false);
 
@@ -44,10 +45,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
   }, [show]);
 
   const onForward = (message: Message) => {
-    forwardModal?.mutate({
-      isOpen: true,
-      message,
-    });
+    toggleSelectMode('forward', message);
   };
 
   const onReact = (message: Message, emoji: string) => {
@@ -55,10 +53,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
   };
 
   const onRecall = (message: Message) => {
-    deleteMode.mutate({
-      isDeleteMode: true,
-      selectedMessages: [message],
-    });
+    toggleSelectMode('delete', message);
   };
 
   return (
@@ -69,7 +64,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           className={clsx(
             'absolute -top-7 flex gap-1.5 px-1.5 py-[3px] rounded-md shadow-md z-20 select-none',
             'bg-background/90 backdrop-blur-md border border-content2/30',
-            isSelf ? '-left-3 flex-row-reverse' : '-right-3 flex-row',
+            isSelf ? '-left-3' : '-right-3 flex-row',
           )}
           exit={{ opacity: 0, scale: 0.9, y: -5 }}
           initial={{ opacity: 0, scale: 0.95, y: -5 }}
@@ -109,7 +104,6 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
             </motion.button>
           </Tooltip>
 
-          {/* --- FORWARD --- */}
           <Tooltip content="Forward" placement="top">
             <motion.button
               className="p-1 hover:text-primary transition-colors"
@@ -171,20 +165,17 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
             </AnimatePresence>
           </motion.div>
 
-          {/* --- RECALL --- */}
-          {isSelf && (
-            <Tooltip content="Recall" placement="top">
-              <motion.button
-                className="p-1 hover:text-danger transition-colors"
-                transition={{ duration: 0.15 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => onRecall?.(msg)}
-              >
-                <Icon className="text-lg" icon="mdi:delete-outline" />
-              </motion.button>
-            </Tooltip>
-          )}
+          <Tooltip content="Recall" placement="top">
+            <motion.button
+              className="p-1 hover:text-danger transition-colors"
+              transition={{ duration: 0.15 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onRecall?.(msg)}
+            >
+              <Icon className="text-lg" icon="mdi:delete-outline" />
+            </motion.button>
+          </Tooltip>
         </motion.div>
       )}
     </AnimatePresence>

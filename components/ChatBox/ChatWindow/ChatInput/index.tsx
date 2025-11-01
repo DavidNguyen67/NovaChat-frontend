@@ -76,7 +76,7 @@ const ChatInput = () => {
   }, []);
 
   return (
-    <div className="relative flex items-center gap-3 px-4 py-3 border-t border-default-200 rounded-b-lg mt-auto bg-content1/70 backdrop-blur-md h-[65px]">
+    <div className="relative flex items-center gap-3 px-4 py-3 border-t border-default-200 mt-auto bg-content1/70 backdrop-blur-md h-[65px] w-full">
       <div className="flex items-center gap-2 text-default-500">
         {INPUT_ACTIONS.map((a) => {
           const onClick = actionHandlers[a.icon];
