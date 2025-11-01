@@ -6,11 +6,11 @@ import { v4 } from 'uuid';
 import { METHOD } from '@/common';
 import { ApiResponse } from '@/interfaces';
 
-export async function handleProxy(
+export async function handleProxy<T>(
   req: NextRequest,
   method: METHOD,
   params: { path: string[] },
-) {
+): Promise<NextResponse<ApiResponse<T>>> {
   try {
     const targetUrl = `${process.env.PROXY_ENDPOINT}/${params.path.join('/')}${req.nextUrl.search}`;
 
@@ -31,45 +31,51 @@ export async function handleProxy(
     });
 
     const contentType = response.headers.get('content-type') || '';
-    const raw = await response.text();
+    const rawText = await response.text();
 
-    let parsed: any;
+    let parsedData: any;
 
     try {
-      parsed = contentType.includes('application/json') ? JSON.parse(raw) : raw;
+      parsedData = contentType.includes('application/json')
+        ? JSON.parse(rawText)
+        : rawText;
     } catch {
-      parsed = raw;
+      parsedData = rawText;
     }
 
     if (!response.ok) {
-      const res: ApiResponse = {
+      const errorResponse: ApiResponse = {
         success: false,
+        message: parsedData?.message ?? 'Upstream API returned error',
         error: {
           code: 'UPSTREAM_ERROR',
-          message: parsed?.message || 'Upstream API returned error',
-          details: parsed,
+          message: parsedData?.message ?? 'Upstream API returned error',
+          details: parsedData,
         },
       };
 
-      return NextResponse.json(res, { status: response.status });
+      return NextResponse.json(errorResponse, {
+        status: response.status || HTTP_STATUS.BAD_GATEWAY,
+      });
     }
 
-    const res: ApiResponse = {
+    const successResponse: ApiResponse<T> = {
       success: true,
-      data: parsed,
+      data: parsedData,
       message: 'Proxy success',
     };
 
-    return NextResponse.json(res, { status: response.status });
+    return NextResponse.json(successResponse, { status: response.status });
   } catch (err: any) {
     console.error(`[Proxy Error - ${method}]`, err);
 
     const errorResponse: ApiResponse = {
       success: false,
+      message: 'Proxy request failed',
       error: {
         code: 'PROXY_REQUEST_FAILED',
-        message: 'Proxy request failed',
-        details: err?.message ?? 'Unknown error',
+        message: err?.message || 'Proxy request failed',
+        details: err?.stack ?? 'Unknown error',
       },
     };
 

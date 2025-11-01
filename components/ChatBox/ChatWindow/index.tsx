@@ -7,7 +7,18 @@ import {
   VirtuosoMessageListLicense,
   VirtuosoMessageListMethods,
 } from '@virtuoso.dev/message-list';
-import { Button, Spinner } from '@heroui/react';
+import {
+  Button,
+  Card,
+  Divider,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+  useDisclosure,
+} from '@heroui/react';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 import { AnimatePresence } from 'framer-motion';
@@ -25,11 +36,31 @@ import FallBack from '@/components/FallBack';
 import { useAccount } from '@/hooks/auth/useAccount';
 
 const ChatWindow = () => {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
   const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null);
 
   const { accountInfo } = useAccount();
 
-  const { messageList, chatRoom } = useChatRoom();
+  const {
+    messageList,
+    chatRoom,
+    deleteMode,
+    handleResetDeleteMode,
+    deleteMessages,
+  } = useChatRoom();
+
+  const handleDeleteMessages = () => {
+    try {
+      const messageIds =
+        deleteMode?.data?.selectedMessages.map((m) => m.id) || [];
+
+      return deleteMessages.trigger({ messageIds });
+    } catch (error) {}
+    handleResetDeleteMode();
+  };
+
+  const selectedMessages = deleteMode?.data?.selectedMessages || [];
 
   const memberIds: string[] = [
     accountInfo?.data?.id ?? '',
@@ -110,6 +141,7 @@ const ChatWindow = () => {
     lastTime.current = null;
     hasMore.current = true;
     saveLists.current = [];
+    setDataView([]);
     requestData();
   };
 
@@ -139,7 +171,7 @@ const ChatWindow = () => {
             )
           }
           ItemContent={MessageItem}
-          className="h-full w-full"
+          className="h-full w-full overflow-x-hidden hide-scrollbar"
           data={{
             data: dataView,
             scrollModifier: isAtBottom
@@ -155,7 +187,7 @@ const ChatWindow = () => {
 
   const isActive = Boolean(chatRoom?.data?.id);
 
-  console.log('Check dataView:', { dataView, userId: accountInfo.data?.id });
+  const isDeleteMode = deleteMode?.data?.isDeleteMode;
 
   return (
     <motion.div
@@ -179,9 +211,69 @@ const ChatWindow = () => {
             <ChatHeader />
 
             <VirtuosoMessageListLicense licenseKey="">
-              <div className="p-2 flex-1 flex flex-col overflow-hidden h-full">
+              <div className="py-2 flex-1 flex flex-col overflow-hidden h-full">
                 {renderContent()}
               </div>
+              {isDeleteMode && (
+                <AnimatePresence>
+                  {selectedMessages.length > 0 && (
+                    <motion.div
+                      key="delete-toolbar"
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+                      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                    >
+                      <Card
+                        className={clsx(
+                          'px-5 py-2 flex flex-row items-center gap-4 rounded-full backdrop-blur-md',
+                          'bg-background/90 border border-content2/30',
+                        )}
+                        shadow="lg"
+                      >
+                        <span className="text-sm text-default-500">
+                          <span className="font-semibold text-foreground">
+                            {selectedMessages.length}{' '}
+                          </span>
+                          selected
+                        </span>
+
+                        <Divider
+                          className="h-5 bg-default-300/40"
+                          orientation="vertical"
+                        />
+
+                        <Button
+                          className="font-medium hover:scale-105 transition-transform"
+                          color="danger"
+                          size="sm"
+                          startContent={
+                            <Icon
+                              className="text-lg"
+                              icon="mdi:delete-outline"
+                            />
+                          }
+                          variant="flat"
+                          onPress={onOpen}
+                        >
+                          Delete
+                        </Button>
+
+                        <Button
+                          className="text-default-500 hover:text-foreground hover:scale-105 transition-transform"
+                          color="default"
+                          size="sm"
+                          variant="light"
+                          onPress={handleResetDeleteMode}
+                        >
+                          Cancel
+                        </Button>
+                      </Card>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
             </VirtuosoMessageListLicense>
 
             {isTyping && (
@@ -224,6 +316,55 @@ const ChatWindow = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex items-center gap-2">
+                <Icon
+                  className="text-danger text-2xl"
+                  icon="mdi:alert-circle-outline"
+                />
+                <span className="font-semibold text-lg">Delete Messages</span>
+              </ModalHeader>
+
+              <ModalBody>
+                <p className="text-default-500 text-sm">
+                  Are you sure you want to delete{' '}
+                  <span className="font-semibold text-foreground">
+                    {selectedMessages.length}
+                  </span>{' '}
+                  {selectedMessages.length > 1 ? 'messages' : 'message'}? <br />
+                  This action cannot be undone.
+                </p>
+              </ModalBody>
+
+              <ModalFooter>
+                <Button
+                  className="hover:opacity-80"
+                  color="default"
+                  variant="light"
+                  onPress={onClose}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="font-medium"
+                  color="danger"
+                  startContent={<Icon icon="mdi:trash-can-outline" />}
+                  onPress={() => {
+                    handleDeleteMessages();
+                    onClose();
+                  }}
+                >
+                  Delete
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </motion.div>
   );
 };

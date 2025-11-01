@@ -20,5 +20,5 @@ export interface ApiResponse<T = any> {
 export interface ApiError {
   code: string;
   message: string;
-  details?: string | Record<string, any>;
+  details?: string | Record<string, any> | null;
 }

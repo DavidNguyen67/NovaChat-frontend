@@ -79,11 +79,6 @@ const ChatRoomList = () => {
 
   const debounceTime = useRef<number>(300);
 
-  const debounceSearch = useDebounceCallBack(
-    () => requestData(),
-    debounceTime.current,
-  );
-
   const handleScrollToTop = () => {
     virtuoso.current?.scrollToIndex({
       index: 0,
@@ -96,12 +91,18 @@ const ChatRoomList = () => {
     lastId.current = null;
     hasMore.current = true;
     saveLists.current = [];
+    setDataView([]);
     requestData();
   };
 
+  const debounceSearch = useDebounceCallBack(
+    () => refreshData(),
+    debounceTime.current,
+  );
+
   useEffect(() => {
-    requestData();
-  }, []);
+    debounceSearch();
+  }, [searchValue]);
 
   const renderContent = () => {
     if (!dataView.length) {

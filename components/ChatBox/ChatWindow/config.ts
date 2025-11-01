@@ -45,7 +45,6 @@ export const seedMessages = (
             {
               id: faker.string.uuid(),
               url: faker.image.url({
-                category: 'nature',
                 width: 400,
                 height: 300,
               }),

@@ -38,7 +38,18 @@ export const mockChatRoomList: ChatRoom[] = Array.from({ length: 20 }).map(
       avatarUrl: faker.image.avatarGitHub(),
       isPrivate,
       ownerId: faker.string.uuid(),
-      lastMessageId: faker.string.uuid(),
+      lastMessage: {
+        content: faker.lorem.sentence(),
+        id: faker.string.uuid(),
+        roomId: faker.string.uuid(),
+        createdAt: faker.date.recent(),
+        sender: {
+          id: faker.string.uuid(),
+          username: faker.internet.username(),
+          fullName: faker.person.fullName(),
+          avatarUrl: faker.image.avatar(),
+        },
+      },
       unreadCount: faker.number.int({ min: 0, max: 15 }),
       type,
       topic:

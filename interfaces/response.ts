@@ -46,7 +46,7 @@ export interface ChatRoom extends BaseEntity {
   avatarUrl?: string;
   isPrivate?: boolean;
   ownerId?: string;
-  lastMessageId?: string;
+  lastMessage?: Message;
   unreadCount?: number;
   type?: CHAT_ROOM_TYPE;
   topic?: string;
