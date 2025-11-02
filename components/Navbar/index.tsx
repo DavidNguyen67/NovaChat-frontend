@@ -9,6 +9,7 @@ import { TabNavBar } from './config';
 import ProfileDropdown from './ProfileDropdown';
 import NotificationDropdown from './NotificationDropdown';
 import ThemeSwitcher from './ThemeSwitcher';
+import ChatRoomDropdown from './ChatRoomDropdown';
 
 import NovaLogoIcon from '@/assets/svg/nova-logo.svg';
 import { useAccount } from '@/hooks/auth/useAccount';
@@ -31,7 +32,6 @@ const Navbar = () => {
       className=" fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 py-2 bg-gradient-to-r from-[#4A00E0]/90 via-[#8E2DE2]/90 to-[#4A00E0]/90 dark:from-[#0f0c29]/90 dark:via-[#302b63]/90 dark:to-[#24243e]/90 backdrop-blur-md border-b border-white/10 text-white transition-all shadow-lg
   "
     >
-      {/* Left: Logo + Search */}
       <div className="flex items-center gap-3">
         <Image
           alt="Nova"
@@ -82,6 +82,7 @@ const Navbar = () => {
       {/* Right side */}
       <div className="flex items-center gap-2">
         <ThemeSwitcher />
+        <ChatRoomDropdown />
         <NotificationDropdown />
         <ProfileDropdown />
       </div>

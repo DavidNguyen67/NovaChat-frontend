@@ -7,7 +7,11 @@ interface PublicLayoutProps {
 }
 
 const PublicLayout = ({ children }: PublicLayoutProps) => {
-  return children;
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      {children}
+    </div>
+  );
 };
 
 export default PublicLayout;

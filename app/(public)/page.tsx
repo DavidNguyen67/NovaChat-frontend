@@ -14,7 +14,7 @@ const HomePage = () => {
 
   useEffect(() => {
     if (accountInfo?.data) {
-      router.push('/chat-room');
+      router.push('/home');
     }
   }, [accountInfo?.data]);
 

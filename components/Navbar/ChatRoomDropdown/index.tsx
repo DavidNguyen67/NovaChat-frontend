@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 'use client';
 
-import type { NotificationItem as Notification } from '@/interfaces/response';
+import type { ChatRoom } from '@/interfaces/response';
 
 import { Button, Spinner } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -9,16 +9,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { useNotification } from './hook';
-import NotificationItem from './NotificationItem';
-import { fakeNotifications } from './config';
-
 import FallBack from '@/components/FallBack';
+import { useChatRoom } from '@/components/ChatBox/hook';
+import ChatRoomItem from '@/components/ChatBox/ChatRoomList/ChatRoomItem';
+import { mockChatRoomList } from '@/components/ChatBox/ChatRoomList/config';
 
-const NotificationDropdown = () => {
-  const { notificationList } = useNotification();
+const ChatRoomDropdown = () => {
+  const { chatRoomList } = useChatRoom();
 
-  const [dataView, setDataView] = useState<Notification[]>([]);
+  const [dataView, setDataView] = useState<ChatRoom[]>([]);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -41,8 +40,8 @@ const NotificationDropdown = () => {
       if (!hasMore.current || querying.current) return;
 
       querying.current = true;
-      // const data = await notificationList.trigger({});
-      const data = fakeNotifications;
+      // const data = await chatRoomList.trigger({});
+      const data = mockChatRoomList;
 
       setDataView((prev) => [...data, ...prev]);
 
@@ -92,11 +91,9 @@ const NotificationDropdown = () => {
 
   const renderContent = () => {
     if (!dataView.length) {
-      if (notificationList.error) return <FallBack type="error" />;
-      if (!notificationList.isMutating)
-        return (
-          <FallBack message="You don't have any notifications" type="empty" />
-        );
+      if (chatRoomList.error) return <FallBack type="error" />;
+      if (!chatRoomList.isMutating)
+        return <FallBack message="You don't have any messages" type="empty" />;
     }
 
     return (
@@ -106,7 +103,7 @@ const NotificationDropdown = () => {
         components={{
           Footer: () =>
             Boolean(dataView.length) &&
-            notificationList.isMutating && (
+            chatRoomList.isMutating && (
               <div className="py-3 text-center text-gray-500 dark:text-gray-400">
                 <Spinner color="primary" size="sm" />
               </div>
@@ -115,7 +112,7 @@ const NotificationDropdown = () => {
         data={dataView}
         endReached={requestData}
         itemContent={(index, item) => (
-          <NotificationItem data={item} index={index} />
+          <ChatRoomItem className="!ml-0 !mr-2" data={item} index={index} />
         )}
         style={{ height: 400 }}
       />
@@ -132,14 +129,14 @@ const NotificationDropdown = () => {
           setIsOpen(!isOpen);
         }}
       >
-        <Icon className="text-2xl" icon="mdi:bell-outline" />
+        <Icon className="text-2xl" icon="mdi:message-outline" />
       </Button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-[360px] bg-content1 border border-gray-200 dark:border-[#3A3B3C] rounded-lg shadow-xl overflow-hidden z-50 animate-fadeIn">
           <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200 dark:border-[#3A3B3C]">
             <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-              Notifications
+              Messages
             </h3>
             <button
               className="text-sm text-blue-500 hover:underline cursor-pointer"
@@ -148,6 +145,7 @@ const NotificationDropdown = () => {
               Close
             </button>
           </div>
+
           <div className="relative h-[400px] w-full py-4 pt-2 pl-2">
             <div className="flex-1 overflow-y-auto flex flex-col gap-2 h-full w-full relative text-gray-800 dark:text-gray-100">
               {renderContent()}
@@ -179,4 +177,4 @@ const NotificationDropdown = () => {
   );
 };
 
-export default NotificationDropdown;
+export default ChatRoomDropdown;

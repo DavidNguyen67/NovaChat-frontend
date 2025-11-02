@@ -13,6 +13,7 @@ import { getUrlMedia } from '@/helpers';
 interface ChatRoomItemProps {
   index: number;
   data: ChatRoom;
+  className?: string;
 }
 
 const ChatRoomItem = (props: ChatRoomItemProps) => {
@@ -29,6 +30,7 @@ const ChatRoomItem = (props: ChatRoomItemProps) => {
         isSelected
           ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 border border-blue-400/30'
           : 'bg-white/40 dark:bg-gray-800/40 border border-white/10 backdrop-blur-md',
+        props.className,
       )}
       initial={{ opacity: 0, y: 5 }}
       transition={{ duration: 0.25 }}

@@ -1,4 +1,4 @@
-import '@/styles/globals.scss';
+import '@/styles/globals.css';
 
 import clsx from 'clsx';
 import { Metadata, Viewport } from 'next';
@@ -40,7 +40,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <Providers themeProps={{ attribute: 'class', defaultTheme: 'dark' }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
-            <main className="flex flex-col items-center justify-center text-center min-h-screen p-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
+            <main className="flex flex-col min-h-screen p-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
               {children}
             </main>
           </div>
