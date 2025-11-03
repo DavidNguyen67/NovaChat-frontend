@@ -1,5 +1,5 @@
 import '@/styles/globals.css';
-
+import 'react-image-gallery/styles/css/image-gallery.css';
 import clsx from 'clsx';
 import { Metadata, Viewport } from 'next';
 
