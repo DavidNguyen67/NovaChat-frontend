@@ -45,6 +45,9 @@ const ProfileDropdown = () => {
           if (key === 'logout') {
             logout();
           }
+          if (key === 'profile-header') {
+            router.push(`/profile/${accountInfo?.data?.id}`);
+          }
         }}
       >
         <DropdownItem

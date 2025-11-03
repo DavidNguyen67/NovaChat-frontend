@@ -6,11 +6,11 @@ import { v4 } from 'uuid';
 import { METHOD } from '@/common';
 import { ApiResponse } from '@/interfaces';
 
-export async function handleProxy<T>(
+async function handleProxy(
   req: NextRequest,
   method: METHOD,
   params: { path: string[] },
-): Promise<NextResponse<ApiResponse<T>>> {
+) {
   try {
     const targetUrl = `${process.env.PROXY_ENDPOINT}/${params.path.join('/')}${req.nextUrl.search}`;
 
@@ -59,7 +59,7 @@ export async function handleProxy<T>(
       });
     }
 
-    const successResponse: ApiResponse<T> = {
+    const successResponse: ApiResponse = {
       success: true,
       data: parsedData,
       message: 'Proxy success',

@@ -13,7 +13,7 @@ import { ToastProvider } from '@heroui/react';
 import Cookies from 'js-cookie';
 
 import { GLOBAL_SOCKET_INIT } from '@/common/global';
-import { initSocket } from '@/helpers/socket';
+// import { initSocket } from '@/helpers/socket';
 import { useAccount } from '@/hooks/auth/useAccount';
 import PreLoader from '@/components/PreLoader';
 
@@ -41,7 +41,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
   useEffect(() => {
     if (!socketInit) {
-      initSocket();
+      // initSocket();
     }
   }, [socketInit]);
 

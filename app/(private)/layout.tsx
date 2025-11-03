@@ -25,7 +25,7 @@ const PrivateLayout = ({ children }: PrivateLayoutProps) => {
 
   return (
     <div className="p-6 flex-grow overflow-hidden h-full w-full pt-12">
-      <div className="flex flex-1 flex-col h-full w-full border-2 rounded-2xl border-white/30 overflow-hidden backdrop-blur-md shadow-lg">
+      <div className="flex flex-1 flex-col h-full w-full overflow-hidden backdrop-blur-md shadow-lg">
         {children}
       </div>
     </div>

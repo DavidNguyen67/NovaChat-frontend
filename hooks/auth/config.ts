@@ -2,6 +2,7 @@
 import { faker } from '@faker-js/faker';
 
 import { User } from '@/interfaces/response';
+import { GENDER } from '@/common';
 
 export const mockUser: User = {
   id: faker.string.uuid(),
@@ -15,7 +16,11 @@ export const mockUser: User = {
   avatarUrl: faker.image.avatar(),
   coverUrl: faker.image.url(),
   bio: faker.lorem.sentence(),
-  gender: faker.helpers.arrayElement(['male', 'female', 'other']),
+  gender: faker.helpers.arrayElement([
+    GENDER.MALE,
+    GENDER.FEMALE,
+    GENDER.OTHER,
+  ]),
   dateOfBirth: faker.date.birthdate({ min: 18, max: 40, mode: 'age' }),
   isOnline: faker.datatype.boolean(),
   lastActiveAt: faker.date.recent({ days: 3 }),

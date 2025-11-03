@@ -4,6 +4,8 @@ import React from 'react';
 import { Icon } from '@iconify/react';
 import { Button, Input } from '@heroui/react';
 import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import clsx from 'clsx';
 
 import { TabNavBar } from './config';
 import ProfileDropdown from './ProfileDropdown';
@@ -15,12 +17,31 @@ import NovaLogoIcon from '@/assets/svg/nova-logo.svg';
 import { useAccount } from '@/hooks/auth/useAccount';
 
 const Navbar = () => {
+  const router = useRouter();
+
+  const pathname = usePathname();
+
   const middleNavBar: TabNavBar[] = [
-    { onPress: () => {}, icon: 'mdi:home-outline' },
-    { onPress: () => {}, icon: 'mdi:account-group-outline' },
-    { onPress: () => {}, icon: 'mdi:monitor-dashboard' },
-    { onPress: () => {}, icon: 'mdi:storefront-outline' },
-    { onPress: () => {}, icon: 'mdi:video-outline' },
+    {
+      icon: 'mdi:home-outline',
+      href: '/home',
+    },
+    {
+      icon: 'mdi:account-group-outline',
+      href: '/account',
+    },
+    {
+      href: '/dashboard',
+      icon: 'mdi:monitor-dashboard',
+    },
+    {
+      href: '/store',
+      icon: 'mdi:storefront-outline',
+    },
+    {
+      href: '/video',
+      icon: 'mdi:video-outline',
+    },
   ];
 
   const { accountInfo: accountInfo } = useAccount();
@@ -59,20 +80,21 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Middle nav buttons */}
       <div className="flex items-center gap-3">
         {middleNavBar.map((item, index) => (
           <Button
             key={index}
             isIconOnly
-            className="
-          text-2xl text-white/90 hover:text-white
-          hover:bg-white/20 active:scale-95
-          transition-all duration-200 rounded-xl
-        "
+            className={clsx(
+              'text-2xl text-white/90 hover:text-white hover:bg-white/20 active:scale-95 transition-all duration-200 rounded-xl',
+              {
+                'bg-white/20 text-white hover:bg-white/25':
+                  pathname === item.href,
+              },
+            )}
             size="md"
             variant="ghost"
-            onPress={item.onPress}
+            onPress={() => router.push(item.href!)}
           >
             <Icon className="text-2xl" icon={item.icon} />
           </Button>

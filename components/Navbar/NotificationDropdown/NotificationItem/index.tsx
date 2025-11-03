@@ -43,8 +43,11 @@ const NotificationItem = ({ data }: NotificationItemProps) => {
       onClick={() => console.log('[NotificationItem]: ', data)}
     >
       {/* Icon */}
-      <div className={clsx('flex-shrink-0 mt-1 size-5', color)}>
-        <Icon className="text-xl" icon={data.icon || 'mdi:bell-outline'} />
+      <div className={clsx('flex-shrink-0 mt-1 size-8', color)}>
+        <Icon
+          className="text-xl size-8"
+          icon={data.icon || 'mdi:bell-outline'}
+        />
       </div>
 
       {/* Content */}

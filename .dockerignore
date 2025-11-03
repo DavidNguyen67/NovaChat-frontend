@@ -1,5 +1,9 @@
 node_modules
 .next
-.github
-.husky
-.yarn
+
+\*.log
+tmp/
+
+build/
+dist/
+.git/

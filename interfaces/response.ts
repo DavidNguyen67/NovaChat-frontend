@@ -108,3 +108,8 @@ export interface NotificationItem extends BaseEntity {
   readAt?: Date | null;
   metadata?: Record<string, any>;
 }
+
+export interface Friend extends BaseEntity {
+  fullName?: string;
+  avatarUrl?: string;
+}
