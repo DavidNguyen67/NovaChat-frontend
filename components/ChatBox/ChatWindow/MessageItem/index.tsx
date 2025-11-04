@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import clsx from 'clsx';
 import { Avatar, Checkbox } from '@heroui/react';
 import { motion } from 'framer-motion';
@@ -39,8 +39,6 @@ const MessageItem = ({ data, nextData }: MessageItemProps) => {
   const isSelected = selectedMode?.data?.selectedMessages.some(
     (m) => m.id === msg.id,
   );
-
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
   return (
     <motion.div

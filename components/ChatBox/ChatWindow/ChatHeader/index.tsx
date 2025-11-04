@@ -12,6 +12,7 @@ import {
   ModalHeader,
   Tooltip,
   Divider,
+  Skeleton,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
@@ -27,7 +28,10 @@ import { getUrlMedia } from '@/helpers';
 
 const ChatHeader = () => {
   const moreOptionModal = useModal();
-  const { chatRoom, selectedMode } = useChatRoom();
+
+  const { chatRoom, selectedMode, chatRoomList } = useChatRoom();
+
+  const isLoading = chatRoom.isLoading || chatRoomList.isMutating;
 
   const status = chatRoom.data?.isOnline
     ? 'Online'
@@ -50,66 +54,97 @@ const ChatHeader = () => {
       >
         {/* Left: Avatar + Info */}
         <div className="flex items-center gap-3">
-          <Avatar
-            className="size-10"
-            fallback={chatRoom.data?.name?.charAt(0)}
-            radius="full"
-            size="md"
-            src={getUrlMedia(chatRoom.data?.avatarUrl!)}
-          />
+          {isLoading ? (
+            <>
+              <Skeleton className="rounded-full">
+                <div className="size-10 rounded-full bg-default-200" />
+              </Skeleton>
 
-          <div className="flex flex-col leading-tight text-left">
-            <span className="font-semibold text-[15px] text-foreground">
-              {chatRoom.data?.name}
-            </span>
-            <span
-              className={clsx('text-xs transition-colors', {
-                'text-success': chatRoom.data?.isOnline,
-                'text-default-500': !chatRoom.data?.isOnline,
-              })}
-            >
-              {status}
-            </span>
-          </div>
+              <div className="flex flex-col gap-2">
+                <Skeleton className="rounded-md">
+                  <div className="h-4 w-[120px] bg-default-200 rounded-md" />
+                </Skeleton>
+                <Skeleton className="rounded-md">
+                  <div className="h-3 w-[80px] bg-default-200 rounded-md" />
+                </Skeleton>
+              </div>
+            </>
+          ) : (
+            <>
+              <Avatar
+                className="size-10"
+                fallback={chatRoom.data?.name?.charAt(0)}
+                radius="full"
+                size="md"
+                src={getUrlMedia(chatRoom.data?.avatarUrl!)}
+              />
+              <div className="flex flex-col leading-tight text-left">
+                <span className="font-semibold text-[15px] text-foreground">
+                  {chatRoom.data?.name}
+                </span>
+                <span
+                  className={clsx('text-xs transition-colors', {
+                    'text-success': chatRoom.data?.isOnline,
+                    'text-default-500': !chatRoom.data?.isOnline,
+                  })}
+                >
+                  {status}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-1">
-          <Tooltip content="Voice call" placement="bottom">
-            <Button
-              isIconOnly
-              className="hover:bg-primary/10 text-foreground/80"
-              size="sm"
-              variant="light"
-            >
-              <Icon className="text-xl" icon="ph:phone-fill" />
-            </Button>
-          </Tooltip>
+          {isLoading ? (
+            <>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="rounded-full">
+                  <div className="size-8 rounded-full bg-default-200" />
+                </Skeleton>
+              ))}
+            </>
+          ) : (
+            <>
+              <Tooltip content="Voice call" placement="bottom">
+                <Button
+                  isIconOnly
+                  className="hover:bg-primary/10 text-foreground/80"
+                  size="sm"
+                  variant="light"
+                >
+                  <Icon className="text-xl" icon="ph:phone-fill" />
+                </Button>
+              </Tooltip>
 
-          <Tooltip content="Video call" placement="bottom">
-            <Button
-              isIconOnly
-              className="hover:bg-primary/10 text-foreground/80"
-              size="sm"
-              variant="light"
-            >
-              <Icon className="text-xl" icon="ph:video-camera-fill" />
-            </Button>
-          </Tooltip>
+              <Tooltip content="Video call" placement="bottom">
+                <Button
+                  isIconOnly
+                  className="hover:bg-primary/10 text-foreground/80"
+                  size="sm"
+                  variant="light"
+                >
+                  <Icon className="text-xl" icon="ph:video-camera-fill" />
+                </Button>
+              </Tooltip>
 
-          <Tooltip content="More options" placement="bottom">
-            <Button
-              isIconOnly
-              className="hover:bg-primary/10 text-foreground/80"
-              size="sm"
-              variant="light"
-              onPress={() => moreOptionModal.handleShow()}
-            >
-              <Icon className="text-xl" icon="mdi:dots-horizontal" />
-            </Button>
-          </Tooltip>
+              <Tooltip content="More options" placement="bottom">
+                <Button
+                  isIconOnly
+                  className="hover:bg-primary/10 text-foreground/80"
+                  size="sm"
+                  variant="light"
+                  onPress={() => moreOptionModal.handleShow()}
+                >
+                  <Icon className="text-xl" icon="mdi:dots-horizontal" />
+                </Button>
+              </Tooltip>
+            </>
+          )}
         </div>
       </div>
 
+      {/* Mode banner */}
       <AnimatePresence>
         {isInMode && (
           <motion.div
@@ -130,6 +165,7 @@ const ChatHeader = () => {
         )}
       </AnimatePresence>
 
+      {/* Modal */}
       <Modal
         isOpen={moreOptionModal.isOpen}
         onOpenChange={moreOptionModal.onChangeOpen}

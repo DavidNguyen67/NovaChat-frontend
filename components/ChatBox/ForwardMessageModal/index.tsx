@@ -67,8 +67,11 @@ export const ForwardMessageModal: React.FC = () => {
       if (!hasMore.current || querying.current) return;
 
       querying.current = true;
-      // const data = await chatRoomList.trigger({ ... });
-      const data = mockChatRoomList;
+      // const data = await chatRoomList.trigger({
+      //   fetchCount: fetchCount.current,
+      //   ...(lastId.current ? { lastId: lastId.current } : {}),
+      // });
+      const data = mockChatRoomList(fetchCount.current);
 
       if (data) {
         const newData = [...saveLists.current, ...data];
@@ -110,19 +113,44 @@ export const ForwardMessageModal: React.FC = () => {
   };
 
   const onConfirm = () => {
-    console.log('Forward message:', selectedMode?.data?.selectedMessages);
-    console.log('To rooms:', selectedRooms);
     setSelectedRooms([]);
     clearSelectModal();
   };
 
   const renderContent = () => {
     if (!dataView.length) {
-      if (chatRoomList.error) return <FallBack type="error" />;
-      if (!chatRoomList.isMutating)
+      if (chatRoomList.isMutating) {
+        return (
+          <div className="flex flex-col gap-2 pr-2 animate-in fade-in-50">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 p-2 rounded-lg border border-default-100 dark:border-default-50 bg-content1/40"
+              >
+                <div className="size-10 rounded-md bg-default-200 dark:bg-default-100 animate-pulse" />
+
+                <div className="flex flex-col gap-2 flex-1 truncate">
+                  <div className="h-4 w-3/5 bg-default-200 dark:bg-default-100 rounded-md animate-pulse" />
+                  <div className="h-3 w-2/4 bg-default-200 dark:bg-default-100 rounded-md animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      } else {
+        if (chatRoomList.error)
+          return (
+            <FallBack
+              error={chatRoomList.error}
+              type="error"
+              onRetry={refreshData}
+            />
+          );
+
         return (
           <FallBack message="You don't have any chat rooms" type="empty" />
         );
+      }
     }
 
     return (

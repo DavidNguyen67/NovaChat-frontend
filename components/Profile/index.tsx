@@ -30,7 +30,7 @@ const Profile = () => {
         <div className="relative w-full h-[300px] md:h-[320px]">
           <CoverPhotoEditor coverUrl={coverUrl} />
 
-          <div className="absolute top-[calc(100%-4rem)] left-0 right-0 flex flex-col gap-4 px-6 md:px-24 z-10 flex-1">
+          <div className="absolute top-[calc(100%-2rem)] left-0 right-0 flex flex-col gap-4 px-6 md:px-24 z-10 flex-1">
             <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
               <div className="flex items-end gap-4">
                 <div className="size-30">
@@ -95,7 +95,7 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="pt-20 px-6 md:px-24 z-20 flex-1 flex gap-4 flex-col h-full pb-6">
+        <div className="pt-26 px-6 md:px-24 z-20 flex-1 flex gap-4 flex-col h-full pb-6">
           {isMore && <FriendSlider />}
           <ProfileTabs />
         </div>

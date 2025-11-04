@@ -4,8 +4,8 @@ import { faker } from '@faker-js/faker';
 import { ChatRoom } from '@/interfaces/response';
 import { CHAT_ROOM_TYPE } from '@/common';
 
-export const mockChatRoomList: ChatRoom[] = Array.from({ length: 20 }).map(
-  () => {
+export const mockChatRoomList = (count: number = 20) =>
+  Array.from({ length: count }).map(() => {
     const isPrivate = faker.datatype.boolean();
     const type = faker.helpers.arrayElement([
       CHAT_ROOM_TYPE.PRIVATE,
@@ -63,5 +63,4 @@ export const mockChatRoomList: ChatRoom[] = Array.from({ length: 20 }).map(
       isOnline: isPrivate ? faker.datatype.boolean() : undefined,
       lastTimestamp: faker.date.recent({ days: 2 }),
     } satisfies ChatRoom;
-  },
-);
+  });

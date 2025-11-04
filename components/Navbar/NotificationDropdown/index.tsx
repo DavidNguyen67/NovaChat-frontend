@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { useNotification } from './hook';
 import NotificationItem from './NotificationItem';
+import NotificationSkeleton from './NotificationSkeleton';
 import { fakeNotifications } from './config';
 
 import FallBack from '@/components/FallBack';
@@ -32,31 +33,40 @@ const NotificationDropdown = () => {
 
   const fetchCount = useRef<number>(20);
 
-  const lastTime = useRef<Date | null>(null);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const saveLists = useRef<Notification[]>([]);
+
+  const lastId = useRef<string | null>(null);
 
   const requestData = async () => {
     try {
       if (!hasMore.current || querying.current) return;
 
       querying.current = true;
-      // const data = await notificationList.trigger({});
-      const data = fakeNotifications;
-
-      setDataView((prev) => [...data, ...prev]);
+      // const data = await notificationList.trigger({
+      //   fetchCount: fetchCount.current,
+      //   ...(lastId.current ? { lastId: lastId.current } : {}),
+      // });
+      const data = fakeNotifications(fetchCount.current);
 
       if (data) {
+        const newData = [...saveLists.current, ...data];
+
+        setDataView(newData);
+        saveLists.current = newData;
+
         if (data.length >= fetchCount.current) {
           hasMore.current = true;
-          lastTime.current = data[data.length - 1].createdAt;
+          lastId.current = data[data.length - 1].id;
         } else {
-          lastTime.current = null;
+          lastId.current = null;
           hasMore.current = false;
         }
       }
-    } catch (error) {}
-    querying.current = false;
+    } finally {
+      querying.current = false;
+    }
   };
 
   const handleScrollToTop = () => {
@@ -65,6 +75,14 @@ const NotificationDropdown = () => {
       align: 'start',
       behavior: 'smooth',
     });
+  };
+
+  const refreshData = () => {
+    lastId.current = null;
+    hasMore.current = true;
+    saveLists.current = [];
+    setDataView([]);
+    requestData();
   };
 
   useEffect(() => {
@@ -92,11 +110,28 @@ const NotificationDropdown = () => {
 
   const renderContent = () => {
     if (!dataView.length) {
-      if (notificationList.error) return <FallBack type="error" />;
-      if (!notificationList.isMutating)
+      if (notificationList.isMutating) {
+        return (
+          <div className="flex flex-col gap-2 pr-2">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <NotificationSkeleton key={idx} />
+            ))}
+          </div>
+        );
+      } else {
+        if (notificationList.error)
+          return (
+            <FallBack
+              error={notificationList.error}
+              type="error"
+              onRetry={refreshData}
+            />
+          );
+
         return (
           <FallBack message="You don't have any notifications" type="empty" />
         );
+      }
     }
 
     return (
@@ -117,7 +152,6 @@ const NotificationDropdown = () => {
         itemContent={(index, item) => (
           <NotificationItem data={item} index={index} />
         )}
-        style={{ height: 400 }}
       />
     );
   };

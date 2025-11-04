@@ -4,35 +4,31 @@ import React from 'react';
 import { Icon } from '@iconify/react';
 import { Button, Spinner } from '@heroui/react';
 
+import { ApiError } from '@/interfaces';
+
 interface FallBackProps {
   type?: 'loading' | 'empty' | 'error';
   onRetry?: () => void;
   message?: React.ReactNode;
+  error?: ApiError;
 }
 
 const FallBack: React.FC<FallBackProps> = ({
   type = 'loading',
   onRetry,
   message,
+  error,
 }) => {
   const renderContent = () => {
     switch (type) {
       case 'loading':
-        return (
-          <>
-            <Icon
-              className="animate-spin text-3xl text-gray-400"
-              icon="mdi:loading"
-            />
-            <Spinner color="primary" size="lg" />
-          </>
-        );
+        return <Spinner color="primary" size="lg" />;
 
       case 'empty':
         return (
           <>
             <Icon className="text-4xl text-gray-400" icon="mdi:chat-outline" />
-            <p className="text-gray-400">{message || 'Empty here'}</p>
+            <p className="text-gray-400">{message ?? 'Empty here'}</p>
           </>
         );
 
@@ -44,7 +40,10 @@ const FallBack: React.FC<FallBackProps> = ({
               icon="mdi:alert-circle-outline"
             />
             <p className="text-gray-300">
-              {message || 'Whoops! Something went wrong.'}
+              {error?.message ??
+                error?.code ??
+                message ??
+                'Whoops! Something went wrong.'}
             </p>
             {onRetry && (
               <Button color="primary" size="sm" onPress={onRetry}>

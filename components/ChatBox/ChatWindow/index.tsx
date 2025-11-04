@@ -18,11 +18,12 @@ import { useChatRoom } from '../hook';
 import MessageItem from './MessageItem';
 import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
-import { seedMessages } from './config';
+import MessageSkeleton from './MessageSkeleton';
 
 import { Message } from '@/interfaces/response';
 import FallBack from '@/components/FallBack';
 import { useAccount } from '@/hooks/auth/useAccount';
+import { seedMessages } from './config';
 
 const ChatWindow = () => {
   const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null);
@@ -126,38 +127,52 @@ const ChatWindow = () => {
 
   const renderContent = () => {
     if (!dataView.length) {
-      if (messageList.error) {
-        return <FallBack type="error" />;
+      if (messageList.isMutating) {
+        return (
+          <div className="flex flex-col overflow-y-auto">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <MessageSkeleton key={i} isSelf={i % 2 === 0} />
+            ))}
+          </div>
+        );
+      } else {
+        if (messageList.error)
+          return (
+            <FallBack
+              error={messageList.error}
+              type="error"
+              onRetry={refreshData}
+            />
+          );
+
+        return <FallBack message="You don't have any messages" type="empty" />;
       }
-      if (!messageList.isMutating) {
-        return <FallBack message="Try to chat something" type="empty" />;
-      }
-    } else {
-      return (
-        <VirtuosoMessageList<Message, null>
-          ref={virtuoso}
-          EmptyPlaceholder={() => <FallBack type="empty" />}
-          Footer={() =>
-            Boolean(dataView.length) &&
-            messageList.isMutating && (
-              <div className="py-3 text-center text-gray-500 dark:text-gray-400">
-                <Spinner color="primary" size="sm" />
-              </div>
-            )
-          }
-          ItemContent={MessageItem}
-          className="h-full w-full overflow-x-hidden hide-scrollbar"
-          data={{
-            data: dataView,
-            scrollModifier: isAtBottom
-              ? { type: 'auto-scroll-to-bottom', autoScroll: 'smooth' }
-              : null,
-          }}
-          initialLocation={{ index: dataView.length - 1, align: 'end' }}
-          onScroll={onScroll}
-        />
-      );
     }
+
+    return (
+      <VirtuosoMessageList<Message, null>
+        ref={virtuoso}
+        EmptyPlaceholder={() => <FallBack type="empty" />}
+        Footer={() =>
+          Boolean(dataView.length) &&
+          messageList.isMutating && (
+            <div className="py-3 text-center text-gray-500 dark:text-gray-400">
+              <Spinner color="primary" size="sm" />
+            </div>
+          )
+        }
+        ItemContent={MessageItem}
+        className="h-full w-full overflow-x-hidden hide-scrollbar"
+        data={{
+          data: dataView,
+          scrollModifier: isAtBottom
+            ? { type: 'auto-scroll-to-bottom', autoScroll: 'smooth' }
+            : null,
+        }}
+        initialLocation={{ index: dataView.length - 1, align: 'end' }}
+        onScroll={onScroll}
+      />
+    );
   };
 
   const isActive = Boolean(chatRoom?.data?.id);

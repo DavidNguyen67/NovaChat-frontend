@@ -14,6 +14,8 @@ async function handleProxy(
   try {
     const targetUrl = `${process.env.PROXY_ENDPOINT}/${params.path.join('/')}${req.nextUrl.search}`;
 
+    console.log('Proxy url:', targetUrl);
+
     const body =
       method === METHOD.GET || method === METHOD.DELETE
         ? undefined

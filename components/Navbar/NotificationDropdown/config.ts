@@ -18,9 +18,8 @@ export const TYPE_NOTIFICATION_COLOR_MAPPING: Record<
   [NOTIFICATION_TYPE.MESSAGE]: 'text-indigo-500',
 };
 
-export const fakeNotifications: NotificationItem[] = Array.from(
-  { length: 30 },
-  (_, i) => {
+export const fakeNotifications = (count: number = 20) =>
+  Array.from({ length: count }, (_, i) => {
     const typeList = [
       NOTIFICATION_TYPE.INFO,
       NOTIFICATION_TYPE.WARNING,
@@ -54,5 +53,4 @@ export const fakeNotifications: NotificationItem[] = Array.from(
         postId: faker.number.int({ min: 1, max: 1000 }),
       },
     };
-  },
-);
+  });

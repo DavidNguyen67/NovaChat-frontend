@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { useChatRoom } from '../hook';
 
 import ChatRoomItem from './ChatRoomItem';
+import ChatRoomSkeleton from './ChatRoomSkeletonItem';
 import { mockChatRoomList } from './config';
 
 import { ChatRoom } from '@/interfaces/response';
@@ -43,24 +44,20 @@ const ChatRoomList = () => {
 
   const requestData = async () => {
     try {
-      if (!hasMore.current || querying.current) {
-        return;
-      }
+      if (!hasMore.current || querying.current) return;
 
       querying.current = true;
-
       // const data = await chatRoomList.trigger({
+      //   fetchCount: fetchCount.current,
       //   ...(lastId.current ? { lastId: lastId.current } : {}),
-      //   ...(searchKey.current ? { searchKey: searchKey.current } : {}),
-      //   ...(fetchCount.current ? { fetchCount: fetchCount.current } : {}),
       // });
-      const data = mockChatRoomList;
-
-      setDataView((prev) => [...data, ...prev]);
+      const data = mockChatRoomList(fetchCount.current);
 
       if (data) {
-        setDataView([...saveLists.current, ...data]);
-        saveLists.current = [...saveLists.current, ...data];
+        const newData = [...saveLists.current, ...data];
+
+        setDataView(newData);
+        saveLists.current = newData;
 
         if (data.length >= fetchCount.current) {
           hasMore.current = true;
@@ -70,9 +67,9 @@ const ChatRoomList = () => {
           hasMore.current = false;
         }
       }
-    } catch (error) {}
-
-    querying.current = false;
+    } finally {
+      querying.current = false;
+    }
   };
 
   const [searchValue, setSearchValue] = useState('');
@@ -106,11 +103,28 @@ const ChatRoomList = () => {
 
   const renderContent = () => {
     if (!dataView.length) {
-      if (chatRoomList.error) return <FallBack type="error" />;
-      if (!chatRoomList.isMutating)
+      if (chatRoomList.isMutating)
+        return (
+          <div className="flex flex-col gap-2 px-2">
+            {Array.from({ length: 10 }).map((_, idx) => (
+              <ChatRoomSkeleton key={idx} />
+            ))}
+          </div>
+        );
+      else {
+        if (chatRoomList.error)
+          return (
+            <FallBack
+              error={chatRoomList.error}
+              type="error"
+              onRetry={refreshData}
+            />
+          );
+
         return (
           <FallBack message="You don't have any chat rooms" type="empty" />
         );
+      }
     }
 
     return (

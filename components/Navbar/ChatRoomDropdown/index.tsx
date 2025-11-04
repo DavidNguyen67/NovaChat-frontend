@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable prettier/prettier */
 'use client';
 
@@ -8,10 +10,12 @@ import { Icon } from '@iconify/react';
 import { useEffect, useRef, useState } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 import FallBack from '@/components/FallBack';
 import { useChatRoom } from '@/components/ChatBox/hook';
 import ChatRoomItem from '@/components/ChatBox/ChatRoomList/ChatRoomItem';
+import ChatRoomSkeleton from '@/components/ChatBox/ChatRoomList/ChatRoomSkeletonItem';
 import { mockChatRoomList } from '@/components/ChatBox/ChatRoomList/config';
 
 const ChatRoomDropdown = () => {
@@ -31,7 +35,9 @@ const ChatRoomDropdown = () => {
 
   const fetchCount = useRef<number>(20);
 
-  const lastTime = useRef<Date | null>(null);
+  const saveLists = useRef<ChatRoom[]>([]);
+
+  const lastId = useRef<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -40,22 +46,29 @@ const ChatRoomDropdown = () => {
       if (!hasMore.current || querying.current) return;
 
       querying.current = true;
-      // const data = await chatRoomList.trigger({});
-      const data = mockChatRoomList;
-
-      setDataView((prev) => [...data, ...prev]);
+      // const data = await chatRoomList.trigger({
+      //   fetchCount: fetchCount.current,
+      //   ...(lastId.current ? { lastId: lastId.current } : {}),
+      // });
+      const data = mockChatRoomList(fetchCount.current);
 
       if (data) {
+        const newData = [...saveLists.current, ...data];
+
+        setDataView(newData);
+        saveLists.current = newData;
+
         if (data.length >= fetchCount.current) {
           hasMore.current = true;
-          lastTime.current = data[data.length - 1].createdAt;
+          lastId.current = data[data.length - 1].id;
         } else {
-          lastTime.current = null;
+          lastId.current = null;
           hasMore.current = false;
         }
       }
-    } catch (error) {}
-    querying.current = false;
+    } finally {
+      querying.current = false;
+    }
   };
 
   const handleScrollToTop = () => {
@@ -66,8 +79,16 @@ const ChatRoomDropdown = () => {
     });
   };
 
-  useEffect(() => {
+  const refreshData = () => {
+    lastId.current = null;
+    hasMore.current = true;
+    saveLists.current = [];
+    setDataView([]);
     requestData();
+  };
+
+  useEffect(() => {
+    refreshData();
   }, []);
 
   useEffect(() => {
@@ -89,11 +110,32 @@ const ChatRoomDropdown = () => {
     };
   }, [isOpen]);
 
+  const router = useRouter();
+
   const renderContent = () => {
     if (!dataView.length) {
-      if (chatRoomList.error) return <FallBack type="error" />;
-      if (!chatRoomList.isMutating)
-        return <FallBack message="You don't have any messages" type="empty" />;
+      if (chatRoomList.isMutating)
+        return (
+          <div className="flex flex-col gap-2 pr-2">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <ChatRoomSkeleton key={idx} />
+            ))}
+          </div>
+        );
+      else {
+        if (chatRoomList.error)
+          return (
+            <FallBack
+              error={chatRoomList.error}
+              type="error"
+              onRetry={refreshData}
+            />
+          );
+
+        return (
+          <FallBack message="You don't have any chat rooms" type="empty" />
+        );
+      }
     }
 
     return (
@@ -114,7 +156,6 @@ const ChatRoomDropdown = () => {
         itemContent={(index, item) => (
           <ChatRoomItem className="!ml-0 !mr-2" data={item} index={index} />
         )}
-        style={{ height: 400 }}
       />
     );
   };
@@ -146,8 +187,8 @@ const ChatRoomDropdown = () => {
             </button>
           </div>
 
-          <div className="relative h-[400px] w-full py-4 pt-2 pl-2">
-            <div className="flex-1 overflow-y-auto flex flex-col gap-2 h-full w-full relative text-gray-800 dark:text-gray-100">
+          <div className="relative h-[400px] w-full py-2 pl-2">
+            <div className="flex-1 overflow-y-auto flex flex-col gap-1 h-full w-full relative text-gray-800 dark:text-gray-100">
               {renderContent()}
               <AnimatePresence>
                 {isShowScrollToTop && (
@@ -169,6 +210,14 @@ const ChatRoomDropdown = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
+              <div
+                className="text-center text-gray-500 dark:text-gray-400 text-sm leading-normal cursor-pointer hover:underline mt-auto mx-auto"
+                onClick={() => {
+                  router.push('/chat-room');
+                }}
+              >
+                View all
+              </div>
             </div>
           </div>
         </div>

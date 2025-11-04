@@ -4,7 +4,7 @@ import { Metadata, Viewport } from 'next';
 
 import { Providers } from './providers';
 
-import 'keen-slider/keen-slider.min.css';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { fontSans } from '@/config/fonts';
 import { siteConfig } from '@/config/site';
 import Navbar from '@/components/Navbar';
