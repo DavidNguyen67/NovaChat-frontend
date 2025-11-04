@@ -37,9 +37,13 @@ import { useModal } from '@/hooks/useModal';
 import { useFile } from '@/hooks/useFile';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { emailRegex } from '@/common/validator';
+import { useDebounceCallBack } from '@/hooks/useDebounceCallBack';
+import { ApiError } from '@/interfaces';
 
 const RegisterForm = () => {
   const { register } = useAccount();
+
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const { checkEmail } = useAuth();
 
@@ -70,37 +74,47 @@ const RegisterForm = () => {
 
   const debounceDelay = useRef<number>(500);
 
-  const checkEmailDebounced = _.debounce(async (email: string) => {
-    const response = await checkEmail.trigger({ email });
+  const checkEmailDebounced = useDebounceCallBack(async (email: string) => {
+    try {
+      const response = await checkEmail.trigger({ email });
 
-    return response;
+      return response;
+    } catch (error: any) {
+      const apiError: ApiError = error;
+
+      formik.setFieldError(
+        'email',
+        error.message || 'Failed to validate email',
+      );
+
+      throw apiError;
+    }
   }, debounceDelay.current);
 
   const handleEmailChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    try {
-      const email = event.target.value.trim();
+    const email = event.target.value.trim();
 
-      formik.handleChange(event);
+    formik.handleChange(event);
 
-      const isEmail = emailRegex.test(email);
+    const isEmail = emailRegex.test(email);
 
-      if (!isEmail) {
-        formik.validateField('email');
+    if (!isEmail) {
+      formik.validateField('email');
 
-        return;
-      }
-
-      const isValid = await checkEmailDebounced(email);
-
-      if (!isValid) {
-        formik.setFieldError('email', 'Email is already in use');
-      }
-    } catch (error) {
-      console.log('[handleEmailChange] Check error', error);
-      formik.setFieldError('email', 'Error checking email');
+      return;
     }
+    setIsCheckingEmail(true);
+
+    const response = await checkEmailDebounced(email);
+
+    const isValid = response.data;
+
+    if (!isValid) {
+      formik.setFieldError('email', 'Email is already in use');
+    }
+    setIsCheckingEmail(false);
   };
 
   const onSubmit = async (values: RegisterFormValues) => {
@@ -474,12 +488,18 @@ const RegisterForm = () => {
                 />
 
                 <Button
-                  className="w-full font-semibold text-lg shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                  className={clsx(
+                    'w-full font-semibold text-lg shadow-md transition-transform rounded-lg',
+                    'bg-gradient-to-r from-blue-500 to-purple-500 text-white',
+                    'hover:scale-[1.02] active:scale-[0.98]',
+                    'disabled:opacity-60 disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:text-gray-200',
+                  )}
                   color="primary"
+                  disabled={isCheckingEmail}
                   radius="lg"
+                  startContent={<Icon icon="mdi:account-plus-outline" />}
                   type="submit"
                 >
-                  <Icon icon="mdi:account-plus-outline" />
                   Sign up
                 </Button>
               </Form>

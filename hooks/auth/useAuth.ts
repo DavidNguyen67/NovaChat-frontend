@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { useRef } from 'react';
 
 import { useMutation } from '../swr';
 
@@ -7,13 +6,11 @@ import { ApiResponse } from '@/interfaces';
 import { METHOD } from '@/common';
 
 export const useAuth = () => {
-  const notificationTile = useRef<string>('Authentication');
-
   const login = useMutation<ApiResponse<any>>('/api/v1/login', {
     url: '/api/v1/login',
     method: METHOD.POST,
     notification: {
-      title: notificationTile.current,
+      title: 'Login',
       message: 'You have successfully logged in.',
     },
   });
@@ -22,7 +19,7 @@ export const useAuth = () => {
     url: '/api/v1/register',
     method: METHOD.POST,
     notification: {
-      title: notificationTile.current,
+      title: 'Register',
       message: 'You have successfully registered.',
     },
   });
@@ -31,7 +28,7 @@ export const useAuth = () => {
     url: '/api/v1/check-email',
     method: METHOD.POST,
     notification: {
-      title: notificationTile.current,
+      title: 'Validation email',
       message: 'Email is available.',
     },
   });
@@ -42,7 +39,7 @@ export const useAuth = () => {
       url: '/api/v1/forgot-password',
       method: METHOD.POST,
       notification: {
-        title: notificationTile.current,
+        title: 'Forgot Password',
         message: 'Password reset link has been sent.',
       },
     },
@@ -51,6 +48,10 @@ export const useAuth = () => {
   const verifyOtp = useMutation<ApiResponse<any>>('/api/v1/verify-otp', {
     url: '/api/v1/verify-otp',
     method: METHOD.POST,
+    notification: {
+      title: 'Verify OTP',
+      message: 'OTP has been sent to your email.',
+    },
   });
 
   return {

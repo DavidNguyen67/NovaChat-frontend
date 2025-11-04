@@ -110,9 +110,9 @@ const LoginForm = () => {
                 color="primary"
                 isLoading={formik.isSubmitting}
                 radius="lg"
+                startContent={<Icon icon="mdi:login" />}
                 type="submit"
               >
-                <Icon icon="mdi:login" />
                 Log in
               </Button>
             </Form>
@@ -132,10 +132,12 @@ const LoginForm = () => {
               className="w-full font-semibold text-md shadow-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
               color="secondary"
               radius="lg"
+              startContent={
+                <Icon className="text-xl" icon="mdi:account-plus-outline" />
+              }
               variant="flat"
               onPress={() => router.push('/register')}
             >
-              <Icon icon="mdi:account-plus-outline" />
               Create new account
             </Button>
           </CardBody>

@@ -2,18 +2,18 @@
 import { useRef, useEffect } from 'react';
 
 /**
- *
- * @param callback call back function
- * @param delay delay
- * @returns
- * @description hook
+ * Debounce hoặc throttle một hàm, vẫn giữ nguyên kiểu trả về (sync hoặc async)
+ * @param callback - Hàm cần debounce
+ * @param delay - Thời gian chờ (ms)
+ * @param throttle - Có bật throttle mode không
+ * @param needDelay - Nếu true thì luôn chờ delay trước khi gọi
  */
-export const useDebounceCallBack = <T extends (...args: any[]) => void>(
+export const useDebounceCallBack = <T extends (...args: any[]) => any>(
   callback: T,
   delay: number,
   throttle: boolean = false,
   needDelay?: boolean,
-) => {
+): ((...args: Parameters<T>) => Promise<ReturnType<T>>) => {
   const timer = useRef<NodeJS.Timeout | null>(null);
   const lastCallTime = useRef<number | null>(null);
 
@@ -24,37 +24,46 @@ export const useDebounceCallBack = <T extends (...args: any[]) => void>(
       }
     };
   }, []);
-  const callFunction = (...args: Parameters<T>) => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
 
-    if (throttle) {
-      const now = new Date().getTime();
-
-      if (
-        (!lastCallTime.current || now - lastCallTime.current >= delay) &&
-        !needDelay
-      ) {
-        callback(...args);
-        lastCallTime.current = now;
-      } else {
-        if (lastCallTime.current == null) {
-          lastCallTime.current = now; // for first time
-        }
-        timer.current = setTimeout(
-          () => {
-            lastCallTime.current = now;
-            callback(...args);
-          },
-          delay - (now - lastCallTime.current),
-        );
+  const callFunction = (...args: Parameters<T>): Promise<ReturnType<T>> => {
+    return new Promise((resolve) => {
+      if (timer.current) {
+        clearTimeout(timer.current);
       }
-    } else {
-      timer.current = setTimeout(() => {
-        callback(...args);
-      }, delay);
-    }
+
+      const now = Date.now();
+
+      const invoke = async () => {
+        const result = await callback(...args);
+
+        resolve(result as ReturnType<T>);
+      };
+
+      if (throttle) {
+        if (
+          (!lastCallTime.current || now - lastCallTime.current >= delay) &&
+          !needDelay
+        ) {
+          lastCallTime.current = now;
+          invoke();
+        } else {
+          if (lastCallTime.current == null) {
+            lastCallTime.current = now;
+          }
+          timer.current = setTimeout(
+            () => {
+              lastCallTime.current = Date.now();
+              invoke();
+            },
+            delay - (now - lastCallTime.current),
+          );
+        }
+      } else {
+        timer.current = setTimeout(() => {
+          invoke();
+        }, delay);
+      }
+    });
   };
 
   return callFunction;
