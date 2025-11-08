@@ -16,6 +16,7 @@ import { GLOBAL_SOCKET_INIT } from '@/common/global';
 // import { initSocket } from '@/helpers/socket';
 import { useAccount } from '@/hooks/auth/useAccount';
 import PreLoader from '@/components/PreLoader';
+import { initSocket } from '@/helpers/socket';
 
 dayjs.extend(relativeTime);
 
@@ -41,7 +42,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
   useEffect(() => {
     if (!socketInit) {
-      // initSocket();
+      initSocket();
     }
   }, [socketInit]);
 
