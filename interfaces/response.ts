@@ -112,4 +112,7 @@ export interface NotificationItem extends BaseEntity {
 export interface Friend extends BaseEntity {
   fullName?: string;
   avatarUrl?: string;
+  followers?: number;
+  mutualFriends?: number;
+  bio?: string;
 }

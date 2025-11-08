@@ -2,7 +2,9 @@
 import { v4 } from 'uuid';
 import { faker } from '@faker-js/faker';
 
-export const fakeFriends = (count: number = 20) =>
+import { Friend } from '@/interfaces/response';
+
+export const fakeFriends = (count: number = 20): Friend[] =>
   Array.from({ length: count }, (_, i) => ({
     id: v4(),
     createdAt: new Date(),

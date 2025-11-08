@@ -42,7 +42,9 @@ export const ForwardMessageModal: React.FC = () => {
 
   const querying = useRef(false);
 
-  const fetchCount = useRef(20);
+  const fetchCount = useRef<number>(
+    parseInt(process.env.NEXT_PUBLIC_FETCH_COUNT!) ?? 30,
+  );
 
   const lastId = useRef<string | null>(null);
 

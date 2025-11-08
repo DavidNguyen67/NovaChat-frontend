@@ -9,6 +9,7 @@ interface IGlobal {
   socketChannels: {
     [s: string]: {
       channel?: SCChannel<unknown>;
+      watchers?: Set<(d: any) => void>;
     };
   };
   config: Config;

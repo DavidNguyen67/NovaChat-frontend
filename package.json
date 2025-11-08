@@ -13,7 +13,6 @@
     "@heroui/react": "^2.8.5",
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.28",
-    "@virtuoso.dev/message-list": "^1.14.1",
     "clsx": "2.1.1",
     "dayjs": "^1.11.18",
     "emoji-picker-react": "^4.15.0",

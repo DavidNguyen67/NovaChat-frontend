@@ -4,6 +4,7 @@ import { Metadata, Viewport } from 'next';
 
 import { Providers } from './providers';
 
+import 'react-photo-view/dist/react-photo-view.css';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { fontSans } from '@/config/fonts';
 import { siteConfig } from '@/config/site';

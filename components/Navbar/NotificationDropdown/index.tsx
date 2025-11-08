@@ -31,7 +31,9 @@ const NotificationDropdown = () => {
 
   const querying = useRef<boolean>(false);
 
-  const fetchCount = useRef<number>(20);
+  const fetchCount = useRef<number>(
+    parseInt(process.env.NEXT_PUBLIC_FETCH_COUNT!) ?? 30,
+  );
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 

@@ -12,7 +12,6 @@ interface PrivateLayoutProps {
 
 const PrivateLayout = ({ children }: PrivateLayoutProps) => {
   const { accountInfo } = useAccount();
-
   const router = useRouter();
 
   useEffect(() => {
@@ -24,8 +23,23 @@ const PrivateLayout = ({ children }: PrivateLayoutProps) => {
   if (!accountInfo?.data) return null;
 
   return (
-    <div className="p-6 flex-grow overflow-hidden h-full w-full pt-12">
-      <div className="flex flex-1 flex-col h-full w-full overflow-hidden backdrop-blur-md shadow-lg">
+    <div className="relative flex-grow overflow-hidden h-full w-full pt-14">
+      {/* <div className="absolute top-8 left-4 z-20">
+        <Button
+          className="bg-content2/70 backdrop-blur-md hover:bg-content2/90 transition-all"
+          radius="full"
+          size="sm"
+          startContent={
+            <Icon className="text-xl text-foreground" icon="mdi:arrow-left" />
+          }
+          variant="flat"
+          onPress={() => router.back()}
+        >
+          Back
+        </Button>
+      </div> */}
+
+      <div className="flex flex-1 flex-col h-full w-full backdrop-blur-md shadow-lg rounded-xl pt-4">
         {children}
       </div>
     </div>

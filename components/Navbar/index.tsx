@@ -28,7 +28,7 @@ const Navbar = () => {
     },
     {
       icon: 'mdi:account-group-outline',
-      href: '/account',
+      href: '/friends',
     },
     {
       href: '/dashboard',

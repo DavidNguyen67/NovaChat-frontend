@@ -18,12 +18,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { useFormik } from 'formik';
 
-import {
-  blobUrlToFile,
-  CoverPhotoFormValues,
-  coverPhotoSchema,
-} from './config';
+import { CoverPhotoFormValues, coverPhotoSchema } from './config';
 import CoverReposition from './CoverReposition';
+import { blobUrlToFile } from '@/helpers';
 
 interface CoverPhotoEditorProps {
   coverUrl: string;

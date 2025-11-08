@@ -1,5 +1,5 @@
 .friend-slider-carousel {
   .thumbs-wrapper {
-    display: none;
+    @apply hidden;
   }
 }

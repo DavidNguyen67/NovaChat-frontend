@@ -22,7 +22,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
 
   const { accountInfo } = useAccount();
 
-  const isSelf = msg.sender?.id === accountInfo?.data?.id;
+  const isSelf = msg?.sender?.id === accountInfo?.data?.id;
 
   const { toggleSelectMode } = useChatRoom();
 

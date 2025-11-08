@@ -20,8 +20,8 @@ const LoginForm = () => {
   const router = useRouter();
 
   const initialValues = useRef<LoginFormValues>({
-    username: '',
-    password: '',
+    username: 'davidnguyen67dev@gmail.com',
+    password: '123123',
   });
 
   const onSubmit = async (values: LoginFormValues) => {

@@ -32,7 +32,9 @@ const ChatRoomList = () => {
 
   const querying = useRef<boolean>(false);
 
-  const fetchCount = useRef<number>(20);
+  const fetchCount = useRef<number>(
+    parseInt(process.env.NEXT_PUBLIC_FETCH_COUNT!) ?? 30,
+  );
 
   const lastId = useRef<string | null>(null);
 
@@ -150,7 +152,7 @@ const ChatRoomList = () => {
   };
 
   return (
-    <div className=" flex flex-col gap-4 w-100 p-4 relative pl-0 border-r border-white/30 dark:border-white/10 bg-white/60 dark:bg-white/10 backdrop-blur-md shadow-sm transition-all duration-300 pr-0">
+    <div className=" flex flex-col gap-4 w-[30rem] p-4 relative pl-0 border-r border-white/30 dark:border-white/10 bg-white/60 dark:bg-white/10 backdrop-blur-md shadow-sm transition-all duration-300 pr-0">
       <div className="flex items-center gap-2 mx-4">
         <h2 className="text-lg font-semibold flex items-center gap-1 text-gray-800 dark:text-gray-100">
           💬 Chats

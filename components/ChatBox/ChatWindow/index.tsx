@@ -1,32 +1,28 @@
 /* eslint-disable prettier/prettier */
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  ListScrollLocation,
-  VirtuosoMessageList,
-  VirtuosoMessageListLicense,
-  VirtuosoMessageListMethods,
-} from '@virtuoso.dev/message-list';
 import { Button, Card, Divider, Spinner } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
+import './style.scss';
 import { useChatRoom } from '../hook';
 
 import MessageItem from './MessageItem';
 import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
 import MessageSkeleton from './MessageSkeleton';
+import { seedMessages } from './config';
 
 import { Message } from '@/interfaces/response';
 import FallBack from '@/components/FallBack';
 import { useAccount } from '@/hooks/auth/useAccount';
-import { seedMessages } from './config';
 
 const ChatWindow = () => {
-  const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null);
+  const virtuoso = useRef<VirtuosoHandle | null>(null);
 
   const { accountInfo } = useAccount();
 
@@ -57,29 +53,41 @@ const ChatWindow = () => {
 
   const querying = useRef<boolean>(false);
 
-  const fetchCount = useRef<number>(20);
+  const fetchCount = useRef<number>(
+    parseInt(process.env.NEXT_PUBLIC_FETCH_COUNT!) ?? 30,
+  );
+
+  console.log('Check dataView:', dataView);
 
   const requestData = async () => {
     try {
-      if (!hasMore.current || querying.current) {
-        return;
-      }
+      if (!hasMore.current || querying.current) return;
       querying.current = true;
 
-      // const data = await messageList.trigger({
-      //   ...(lastTime.current ? { lastTime: lastTime.current } : {}),
-      //   ...(fetchCount.current ? { fetchCount: fetchCount.current } : {}),
-      // });
+      const virtuosoEl = document.querySelector('.chat-window-virtuoso');
+
+      const prevScrollHeight = virtuosoEl?.scrollHeight ?? 0;
+      const prevScrollTop = virtuosoEl?.scrollTop ?? 0;
 
       const data = seedMessages(
         chatRoom.data ? [chatRoom.data.id] : [],
         memberIds,
+        saveLists.current?.length,
         fetchCount.current,
       );
 
-      if (data) {
-        setDataView([...data, ...saveLists.current]);
+      if (data && data.length > 0) {
         saveLists.current = [...data, ...saveLists.current];
+        setDataView([...saveLists.current]);
+
+        requestAnimationFrame(() => {
+          const newScrollHeight = virtuosoEl?.scrollHeight ?? 0;
+          const delta = newScrollHeight - prevScrollHeight;
+
+          if (virtuosoEl) {
+            virtuosoEl.scrollTop = prevScrollTop + delta;
+          }
+        });
 
         if (data.length >= fetchCount.current) {
           hasMore.current = true;
@@ -88,37 +96,33 @@ const ChatWindow = () => {
           lastTime.current = null;
           hasMore.current = false;
         }
+      } else {
+        hasMore.current = false;
       }
-    } catch (error) {}
-
-    querying.current = false;
-  };
-
-  const onScroll = ({ listOffset, bottomOffset }: ListScrollLocation) => {
-    if (listOffset > -50) {
-      requestData();
-    }
-    if (bottomOffset > 50) {
-      isAtBottom && setIsAtBottom(false);
-    } else {
-      !isAtBottom && setIsAtBottom(true);
+    } catch (err) {
+      console.error('requestData error:', err);
+    } finally {
+      querying.current = false;
     }
   };
 
-  const handleScrollToBottom = () => {
-    virtuoso.current?.scrollToItem({
+  const scrollToBottom = () => {
+    virtuoso.current?.scrollToIndex({
       index: dataView.length - 1,
       align: 'end',
       behavior: 'smooth',
     });
   };
 
-  const refreshData = () => {
+  const refreshData = async () => {
     lastTime.current = null;
     hasMore.current = true;
     saveLists.current = [];
     setDataView([]);
-    requestData();
+    await requestData();
+    setTimeout(() => {
+      scrollToBottom();
+    }, 400);
   };
 
   useEffect(() => {
@@ -150,27 +154,48 @@ const ChatWindow = () => {
     }
 
     return (
-      <VirtuosoMessageList<Message, null>
+      <Virtuoso<Message>
         ref={virtuoso}
-        EmptyPlaceholder={() => <FallBack type="empty" />}
-        Footer={() =>
-          Boolean(dataView.length) &&
-          messageList.isMutating && (
-            <div className="py-3 text-center text-gray-500 dark:text-gray-400">
-              <Spinner color="primary" size="sm" />
-            </div>
-          )
-        }
-        ItemContent={MessageItem}
-        className="h-full w-full overflow-x-hidden hide-scrollbar"
-        data={{
-          data: dataView,
-          scrollModifier: isAtBottom
-            ? { type: 'auto-scroll-to-bottom', autoScroll: 'smooth' }
-            : null,
+        atBottomThreshold={50}
+        className="h-full w-full overflow-x-hidden chat-window-virtuoso"
+        components={{
+          EmptyPlaceholder: () => <FallBack type="empty" />,
+          Header: () =>
+            Boolean(dataView.length) && messageList.isMutating ? (
+              <div className="py-3 text-center text-gray-500 dark:text-gray-400">
+                <Spinner color="primary" size="sm" />
+              </div>
+            ) : null,
         }}
-        initialLocation={{ index: dataView.length - 1, align: 'end' }}
-        onScroll={onScroll}
+        computeItemKey={(_, item) => item.id}
+        data={dataView}
+        followOutput={isAtBottom ? 'smooth' : false}
+        increaseViewportBy={{
+          bottom: 100,
+          top: 100,
+        }}
+        initialTopMostItemIndex={dataView.length - 1}
+        itemContent={(index, item) => {
+          const prevData = dataView[index - 1];
+          const nextData = dataView[index + 1];
+
+          return (
+            <MessageItem
+              key={item.id}
+              data={item}
+              nextData={nextData}
+              prevData={prevData}
+            />
+          );
+        }}
+        rangeChanged={(range) => {
+          if (range.endIndex >= dataView.length - 1) {
+            setIsAtBottom(true);
+          }
+          if (range.startIndex < 10) {
+            requestData();
+          }
+        }}
       />
     );
   };
@@ -198,109 +223,107 @@ const ChatWindow = () => {
           >
             <ChatHeader />
 
-            <VirtuosoMessageListLicense licenseKey="">
-              <div className="py-2 flex-1 flex flex-col overflow-hidden h-full">
-                {renderContent()}
-              </div>
-              {selectedMode?.data?.isSelectMode && (
-                <AnimatePresence>
-                  {selectedMode?.data?.selectedMessages?.length > 0 && (
-                    <motion.div
-                      key="delete-toolbar"
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
-                      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      transition={{ duration: 0.25, ease: 'easeOut' }}
+            <div className="py-2 flex-1 flex flex-col overflow-hidden h-full">
+              {renderContent()}
+            </div>
+            {selectedMode?.data?.isSelectMode && (
+              <AnimatePresence>
+                {selectedMode?.data?.selectedMessages?.length > 0 && (
+                  <motion.div
+                    key="delete-toolbar"
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                  >
+                    <Card
+                      className={clsx(
+                        'px-5 py-2 flex flex-row items-center gap-4 rounded-full backdrop-blur-md',
+                        'bg-background/90 border border-content2/30',
+                      )}
+                      shadow="lg"
                     >
-                      <Card
-                        className={clsx(
-                          'px-5 py-2 flex flex-row items-center gap-4 rounded-full backdrop-blur-md',
-                          'bg-background/90 border border-content2/30',
-                        )}
-                        shadow="lg"
-                      >
-                        <span className="text-sm text-default-500">
-                          <span className="font-semibold text-foreground">
-                            {selectedMode?.data?.selectedMessages?.length}{' '}
-                          </span>
-                          selected
+                      <span className="text-sm text-default-500 flex items-center gap-1">
+                        <span className="font-semibold text-foreground">
+                          {selectedMode?.data?.selectedMessages?.length}{' '}
                         </span>
+                        selected
+                      </span>
 
-                        <Divider
-                          className="h-5 bg-default-300/40"
-                          orientation="vertical"
-                        />
+                      <Divider
+                        className="h-5 bg-default-300/40"
+                        orientation="vertical"
+                      />
 
-                        {(selectedMode?.data?.mode === 'unknown' ||
-                          selectedMode?.data?.mode === 'forward') && (
-                          <Button
-                            className="font-medium hover:scale-105 transition-transform"
-                            color="primary"
-                            size="sm"
-                            startContent={
-                              <Icon
-                                className="text-lg"
-                                icon="mdi:forward-outline"
-                              />
-                            }
-                            variant="flat"
-                            onPress={() =>
-                              openSelectModal(
-                                selectedMode?.data?.mode === 'unknown'
-                                  ? 'unknown'
-                                  : 'forward',
-                              )
-                            }
-                          >
-                            Forward
-                          </Button>
-                        )}
-                        {(selectedMode?.data?.mode === 'unknown' ||
-                          selectedMode?.data?.mode === 'delete') && (
-                          <Button
-                            className="font-medium hover:scale-105 transition-transform"
-                            color="danger"
-                            size="sm"
-                            startContent={
-                              <Icon
-                                className="text-lg"
-                                icon="mdi:delete-outline"
-                              />
-                            }
-                            variant="flat"
-                            onPress={() =>
-                              openSelectModal(
-                                selectedMode?.data?.mode === 'unknown'
-                                  ? 'unknown'
-                                  : 'delete',
-                              )
-                            }
-                          >
-                            Delete
-                          </Button>
-                        )}
-
-                        <Divider
-                          className="h-5 bg-default-300/40"
-                          orientation="vertical"
-                        />
-
+                      {(selectedMode?.data?.mode === 'unknown' ||
+                        selectedMode?.data?.mode === 'forward') && (
                         <Button
-                          className="text-default-500 hover:text-foreground hover:scale-105 transition-transform"
-                          color="default"
+                          className="font-medium hover:scale-105 transition-transform"
+                          color="primary"
                           size="sm"
-                          variant="light"
-                          onPress={handleResetSelectMode}
+                          startContent={
+                            <Icon
+                              className="text-lg"
+                              icon="mdi:forward-outline"
+                            />
+                          }
+                          variant="flat"
+                          onPress={() =>
+                            openSelectModal(
+                              selectedMode?.data?.mode === 'unknown'
+                                ? 'unknown'
+                                : 'forward',
+                            )
+                          }
                         >
-                          Cancel
+                          Forward
                         </Button>
-                      </Card>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              )}
-            </VirtuosoMessageListLicense>
+                      )}
+                      {(selectedMode?.data?.mode === 'unknown' ||
+                        selectedMode?.data?.mode === 'delete') && (
+                        <Button
+                          className="font-medium hover:scale-105 transition-transform"
+                          color="danger"
+                          size="sm"
+                          startContent={
+                            <Icon
+                              className="text-lg"
+                              icon="mdi:delete-outline"
+                            />
+                          }
+                          variant="flat"
+                          onPress={() =>
+                            openSelectModal(
+                              selectedMode?.data?.mode === 'unknown'
+                                ? 'unknown'
+                                : 'delete',
+                            )
+                          }
+                        >
+                          Delete
+                        </Button>
+                      )}
+
+                      <Divider
+                        className="h-5 bg-default-300/40"
+                        orientation="vertical"
+                      />
+
+                      <Button
+                        className="text-default-500 hover:text-foreground hover:scale-105 transition-transform"
+                        color="default"
+                        size="sm"
+                        variant="light"
+                        onPress={handleResetSelectMode}
+                      >
+                        Cancel
+                      </Button>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
 
             {isTyping && (
               <div className="flex items-center gap-2 text-sm text-default-500 px-5 pb-2">
@@ -321,7 +344,7 @@ const ChatWindow = () => {
                   isIconOnly
                   className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-105 transition-transform"
                   size="sm"
-                  onPress={handleScrollToBottom}
+                  onPress={scrollToBottom}
                 >
                   <Icon className="text-xl" icon="mdi:arrow-down" />
                 </Button>

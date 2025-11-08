@@ -1,26 +1,24 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable prettier/prettier */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Avatar, Button, Card, CardBody, Skeleton } from '@heroui/react';
+import { Button, Card, CardBody, Skeleton } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useRouter } from 'next/navigation';
 import { Carousel } from 'react-responsive-carousel';
 import './style.scss';
 
 import { useFriendSlider } from './hook';
+import { fakeFriends } from './config';
 
 import { Friend } from '@/interfaces/response';
-import { getUrlMedia } from '@/helpers';
 import FallBack from '@/components/FallBack';
+import FriendItem from '@/components/Friends/FriendItem';
 
 const FriendSlider = () => {
   const { friendsList } = useFriendSlider();
 
-  const router = useRouter();
-
-  const fetchCount = useRef<number>(20);
+  const fetchCount = useRef<number>(
+    parseInt(process.env.NEXT_PUBLIC_FETCH_COUNT!) ?? 30,
+  );
 
   const saveLists = useRef<Friend[]>([]);
 
@@ -39,13 +37,13 @@ const FriendSlider = () => {
       }
       querying.current = true;
 
-      const data = await friendsList.trigger({
-        fetchCount: fetchCount.current,
-        ...(lastId.current && {
-          lastId: lastId.current,
-        }),
-      });
-      // const data = fakeFriends(fetchCount.current);
+      // const data = await friendsList.trigger({
+      //   fetchCount: fetchCount.current,
+      //   ...(lastId.current && {
+      //     lastId: lastId.current,
+      //   }),
+      // });
+      const data = fakeFriends(fetchCount.current);
 
       if (data) {
         setDataView([...saveLists.current, ...data]);
@@ -65,19 +63,20 @@ const FriendSlider = () => {
     querying.current = false;
   };
 
+  const carouselRef = useRef<Carousel>(null);
+
   const refreshData = () => {
     lastId.current = null;
     hasMore.current = true;
     saveLists.current = [];
     setDataView([]);
     requestData();
+    carouselRef.current?.moveTo(1);
   };
 
   useEffect(() => {
     refreshData();
   }, []);
-
-  const carouselRef = useRef<Carousel>(null);
 
   const handleChange = (index: number) => {
     const threshold = dataView.length - 4;
@@ -91,8 +90,8 @@ const FriendSlider = () => {
     if (!dataView.length) {
       if (friendsList.isMutating) {
         return (
-          <div className="grid grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, idx) => (
+          <div className="grid grid-cols-3 md:grid-cols-4 2xl:grid-cols-6 gap-4">
+            {Array.from({ length: 6 }).map((_, idx) => (
               <Card key={idx} className="space-y-5 p-4" radius="lg">
                 <Skeleton className="rounded-lg">
                   <div className="h-24 rounded-lg bg-default-300" />
@@ -141,29 +140,8 @@ const FriendSlider = () => {
           onChange={handleChange}
         >
           {dataView.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col items-center gap-2 p-4 mx-2 rounded-2xl border border-default-200/60 bg-content1/50 hover:bg-default-100/60 dark:bg-content2/40 dark:hover:bg-default-50/30 transition-all duration-300 ease-in-out hover:shadow-md hover:scale-[1.03]"
-              onClick={() => router.push(`/profile/${item.id}`)}
-            >
-              <Avatar
-                className="size-16 shadow-sm ring-1 ring-default-200/50"
-                fallback={item.fullName?.charAt(0)}
-                radius="full"
-                src={getUrlMedia(item.avatarUrl!)}
-              />
-              <span className="text-sm font-medium text-foreground text-center truncate max-w-[120px]">
-                {item.fullName}
-              </span>
-              <Button
-                className="mt-1 hover:scale-[1.05] transition-transform duration-200"
-                color="primary"
-                radius="lg"
-                size="sm"
-                variant="flat"
-              >
-                Add Friend
-              </Button>
+            <div key={item.id} className="px-3">
+              <FriendItem data={item} />
             </div>
           ))}
         </Carousel>
@@ -202,10 +180,13 @@ const FriendSlider = () => {
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-foreground">
-              <Skeleton className="w-full rounded-lg">
-                <div className="h-3 w-full rounded-lg bg-default-200" />
-              </Skeleton>
-              People you may know
+              {friendsList.isMutating ? (
+                <Skeleton className="w-full rounded-lg">
+                  <div className="h-3 w-full rounded-lg bg-default-200" />
+                </Skeleton>
+              ) : (
+                'People you may know'
+              )}
             </h3>
             <Button
               className="text-sm font-medium text-primary"

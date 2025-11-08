@@ -9,7 +9,7 @@ import DeleteMessageModal from './DeleteMessageModal';
 
 const ChatBox = () => {
   return (
-    <div className="flex w-full h-full border-2 rounded-2xl border-white/30">
+    <div className="flex w-full h-full border-2 rounded-2xl border-white/30 overflow-hidden">
       <ChatRoomList />
       <ChatWindow />
       <ForwardMessageModal />
