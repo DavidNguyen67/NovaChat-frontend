@@ -14,12 +14,15 @@ interface ChatRoomItemProps {
   index: number;
   data: ChatRoom;
   className?: string;
+  allowChangeSelectedRoom?: boolean;
 }
 
 const ChatRoomItem = (props: ChatRoomItemProps) => {
   const { chatRoom } = useChatRoom();
 
-  const isSelected = chatRoom?.data?.id === props.data?.id;
+  const isSelected = props.allowChangeSelectedRoom
+    ? chatRoom?.data?.id === props.data?.id
+    : false;
 
   return (
     <motion.div
@@ -35,7 +38,11 @@ const ChatRoomItem = (props: ChatRoomItemProps) => {
       initial={{ opacity: 0, y: 5 }}
       transition={{ duration: 0.25 }}
       whileHover={{ scale: 1.01 }}
-      onClick={() => chatRoom?.mutate(props.data)}
+      onClick={() => {
+        if (props.allowChangeSelectedRoom) {
+          chatRoom?.mutate(props.data);
+        }
+      }}
     >
       <div className="relative shrink-0 size-14">
         <Badge

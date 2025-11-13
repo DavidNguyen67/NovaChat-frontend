@@ -98,6 +98,12 @@ export interface User extends BaseEntity {
   settings?: Record<string, unknown>;
 }
 
+export interface SessionInfo {
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: Date;
+}
+
 export interface NotificationItem extends BaseEntity {
   name: string;
   message: string;
@@ -113,6 +119,7 @@ export interface Friend extends BaseEntity {
   fullName?: string;
   avatarUrl?: string;
   followers?: number;
-  mutualFriends?: number;
+  mutualFriends?: Friend[];
   bio?: string;
+  numberOfFriends?: number;
 }

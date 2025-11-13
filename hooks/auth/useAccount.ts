@@ -3,11 +3,13 @@
 import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { v4 } from 'uuid';
 
 import { useMutation } from '../swr';
 
 import { useAuth } from './useAuth';
 import { mockUser } from './config';
+import { useSession } from './useSession';
 
 import { GLOBAL_ACCOUNT_INFO, GLOBAL_SOCKET_INIT } from '@/common/global';
 import { User } from '@/interfaces/response';
@@ -20,6 +22,8 @@ export const useAccount = () => {
   const router = useRouter();
 
   const { data: socketInit } = useSWR(GLOBAL_SOCKET_INIT);
+
+  const { sessionInfo } = useSession();
 
   const { login: loginMutation, register: registerMutation } = useAuth();
 
@@ -39,13 +43,17 @@ export const useAccount = () => {
 
   const initUser = async (token: string) => {
     // await initUserMutation.trigger({ token });
+    Cookies.set('auth', token);
+    sessionInfo.mutate({ accessToken: token });
     accountInfo.mutate(mockUser);
+
+    console.log('Initt:', mockUser);
   };
 
   const login = async (values: LoginFormValues) => {
     try {
       // await loginMutation.trigger(values);
-      initUser('');
+      initUser(v4());
     } catch (error) {}
   };
 

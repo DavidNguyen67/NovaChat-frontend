@@ -10,5 +10,28 @@ export const mockFriendRequests = (count: number = 4): Friend[] =>
     fullName: faker.person.fullName(),
     avatarUrl: faker.image.avatarGitHub(),
     createdAt: new Date(),
-    followers: faker.number.int({ min: 0, max: 1000 }),
+    followers: faker.number.int({ min: 0, max: 10000 }),
+    bio: faker.lorem.sentence(),
+    mutualFriends: Array.from(
+      { length: faker.number.int({ min: 0, max: 10 }) },
+      () => ({
+        id: v4(),
+        fullName: faker.person.fullName(),
+        avatarUrl: faker.image.avatarGitHub(),
+        createdAt: new Date(),
+        followers: faker.number.int({ min: 0, max: 10000 }),
+        bio: faker.lorem.sentence(),
+        mutualFriends: Array.from(
+          { length: faker.number.int({ min: 0, max: 10 }) },
+          () => ({
+            id: v4(),
+            fullName: faker.person.fullName(),
+            avatarUrl: faker.image.avatarGitHub(),
+            createdAt: new Date(),
+            followers: faker.number.int({ min: 0, max: 10000 }),
+            bio: faker.lorem.sentence(),
+          }),
+        ),
+      }),
+    ),
   }));

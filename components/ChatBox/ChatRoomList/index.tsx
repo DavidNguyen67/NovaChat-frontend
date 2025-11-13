@@ -145,7 +145,7 @@ const ChatRoomList = () => {
         data={dataView}
         endReached={requestData}
         itemContent={(index, item) => (
-          <ChatRoomItem data={item} index={index} />
+          <ChatRoomItem allowChangeSelectedRoom data={item} index={index} />
         )}
       />
     );

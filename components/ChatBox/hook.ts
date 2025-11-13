@@ -5,6 +5,7 @@ import { SelectedModeData } from './config';
 
 import {
   GLOBAL_CHAT_ROOM_KEY,
+  GLOBAL_RECENT_CHAT_ROOMS,
   GLOBAL_SELECTED_MODE_CHAT,
 } from '@/common/global';
 import { ChatRoom, Message } from '@/interfaces/response';
@@ -13,6 +14,8 @@ import { METHOD } from '@/common';
 
 export const useChatRoom = () => {
   const chatRoom = useSWR<ChatRoom>(GLOBAL_CHAT_ROOM_KEY);
+
+  const recentChatRooms = useSWR<ChatRoom[]>(GLOBAL_RECENT_CHAT_ROOMS);
 
   const selectedMode = useSWR<SelectedModeData>(GLOBAL_SELECTED_MODE_CHAT);
 
@@ -86,6 +89,26 @@ export const useChatRoom = () => {
     });
   };
 
+  const handleAddToRecentChatRooms = (chatRoom: ChatRoom) => {
+    const existingRooms = recentChatRooms.data || [];
+    const isRoomExist = existingRooms.some((room) => room.id === chatRoom.id);
+    let updatedRooms: ChatRoom[] = [];
+
+    if (isRoomExist) {
+      updatedRooms = existingRooms;
+    } else {
+      updatedRooms = [chatRoom, ...existingRooms];
+    }
+    recentChatRooms.mutate(updatedRooms, false);
+  };
+
+  const handleRemoveFromRecentChatRooms = (chatRoomId: string) => {
+    const existingRooms = recentChatRooms.data || [];
+    const updatedRooms = existingRooms.filter((room) => room.id !== chatRoomId);
+
+    recentChatRooms.mutate(updatedRooms);
+  };
+
   const chatRoomList = useMutation<ChatRoom[]>('/api/v1/chat-room', {
     url: '/api/v1/chat-room',
     method: METHOD.GET,
@@ -125,5 +148,7 @@ export const useChatRoom = () => {
     selectedMode,
     openSelectModal,
     clearSelectModal,
+    handleAddToRecentChatRooms,
+    handleRemoveFromRecentChatRooms,
   };
 };

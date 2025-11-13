@@ -42,6 +42,9 @@ const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       <div className="flex flex-1 flex-col h-full w-full backdrop-blur-md shadow-lg rounded-xl pt-4">
         {children}
       </div>
+
+      <div className="absolute bottom-0 right-0 z-20 h-[500px] flex flex-col" />
+      <div className="absolute bottom-0 right-0 z-20 h-[500px] flex flex-col" />
     </div>
   );
 };

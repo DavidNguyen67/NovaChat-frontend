@@ -69,7 +69,7 @@ const ProfileDropdown = () => {
             </div>
             <div className="flex flex-col flex-1 h-full w-full overflow-hidden line-clamp-1">
               <p className="font-semibold text-gray-900 dark:text-gray-100">
-                {fallBackChar || 'Unknown User'}
+                {fallBackChar}
               </p>
             </div>
           </div>

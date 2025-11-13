@@ -9,7 +9,7 @@ import { TIME_OUT_REQUEST } from './common/global';
 import { METHOD } from '@/common';
 import { ApiResponse } from '@/interfaces';
 
-const publicRoutes = [
+const UNRESTRICTED_ENDPOINTS = [
   '/api/v1/login',
   '/api/v1/register',
   '/api/v1/check-email',
@@ -21,11 +21,9 @@ const publicRoutes = [
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  // Chỉ proxy các route API v1
   if (!pathname.startsWith('/api/v1/')) return NextResponse.next();
 
-  // Bỏ qua route public
-  if (publicRoutes.includes(pathname)) {
+  if (UNRESTRICTED_ENDPOINTS.includes(pathname)) {
     console.log(`[Proxy][Public] ${request.method} ${pathname}`);
 
     return NextResponse.next();

@@ -8,6 +8,7 @@ import { Avatar, Button, Card } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 
 import { Friend } from '@/interfaces/response';
+import { formatNumber } from '@/helpers';
 
 export interface FriendItemProps {
   data: Friend;
@@ -43,7 +44,7 @@ const FriendItem = ({ data, isRequest, onConfirm }: FriendItemProps) => {
             {data?.fullName}
           </p>
           <p className="font-medium text-xs text-default-500 h-[calc((1/0.75)*0.75rem)] line-clamp-1">
-            {data?.followers && `${data?.followers} Followers`}
+            {data?.followers && `${formatNumber(data?.followers)} Followers`}
           </p>
         </div>
       </div>

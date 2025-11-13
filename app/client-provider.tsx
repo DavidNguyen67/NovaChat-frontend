@@ -8,7 +8,7 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import React, { useEffect } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import useSWR from 'swr';
+import useSWR, { SWRConfig } from 'swr';
 import { ToastProvider } from '@heroui/react';
 import Cookies from 'js-cookie';
 
@@ -33,7 +33,7 @@ declare module '@react-types/shared' {
   }
 }
 
-export function Providers({ children, themeProps }: ProvidersProps) {
+const ClientProvider = ({ children, themeProps }: ProvidersProps) => {
   const router = useRouter();
 
   const { initUser, initUserMutation, accountInfo } = useAccount();
@@ -59,15 +59,26 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   return (
     <HeroUIProvider navigate={router.push}>
       <NextThemesProvider {...themeProps}>
-        {initUserMutation?.isMutating ? (
-          <div className="flex-1 w-full items-center justify-center h-screen">
-            <PreLoader />
-          </div>
-        ) : (
-          children
-        )}
-        <ToastProvider maxVisibleToasts={3} placement="top-right" />
+        <SWRConfig
+          value={{
+            revalidateOnFocus: true,
+            revalidateOnMount: true,
+            revalidateOnReconnect: true,
+            errorRetryCount: 0,
+          }}
+        >
+          {initUserMutation?.isMutating ? (
+            <div className="flex-1 w-full items-center justify-center h-screen">
+              <PreLoader />
+            </div>
+          ) : (
+            children
+          )}
+          <ToastProvider maxVisibleToasts={3} placement="top-right" />
+        </SWRConfig>
       </NextThemesProvider>
     </HeroUIProvider>
   );
-}
+};
+
+export default ClientProvider;

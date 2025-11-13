@@ -20,6 +20,7 @@ import { useFormik } from 'formik';
 
 import { CoverPhotoFormValues, coverPhotoSchema } from './config';
 import CoverReposition from './CoverReposition';
+
 import { blobUrlToFile } from '@/helpers';
 
 interface CoverPhotoEditorProps {
@@ -68,6 +69,7 @@ const CoverPhotoEditor: React.FC<CoverPhotoEditorProps> = ({ coverUrl }) => {
   };
 
   const handleInitFormValues = async () => {
+    if (!coverUrl) return;
     setAvatarPreview(coverUrl);
     const file = await blobUrlToFile(coverUrl);
 

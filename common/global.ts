@@ -1,7 +1,11 @@
 /* eslint-disable prettier/prettier */
 export const GLOBAL_ACCOUNT_INFO = 'GLOBAL_ACCOUNT_INFO';
 
+export const GLOBAL_SESSION_INFO = 'GLOBAL_SESSION_INFO';
+
 export const GLOBAL_CHAT_ROOM_KEY = 'GLOBAL_CHAT_ROOM_KEY';
+
+export const GLOBAL_RECENT_CHAT_ROOMS = 'GLOBAL_RECENT_CHAT_ROOMS';
 
 export const GLOBAL_SOCKET_STATUS = 'GLOBAL_SOCKET_STATUS';
 

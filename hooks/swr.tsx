@@ -6,6 +6,8 @@ import useSWR from 'swr';
 import { mutate, PublicConfiguration } from 'swr/_internal';
 import useSWRMutation from 'swr/mutation';
 
+import { useSession } from './auth/useSession';
+
 import { METHOD } from '@/common';
 import { RestError, RestResponse } from '@/interfaces/response';
 import { fetcher } from '@/common/restApi';
@@ -13,7 +15,7 @@ import { ApiResponse } from '@/interfaces';
 
 interface WrapperConfig<T>
   extends Partial<PublicConfiguration<T, RestError, (arg: string) => any>> {
-  url?: string;
+  url?: string | (() => string);
   method?: METHOD;
   body?: Record<string, unknown>;
   auth?: boolean;
@@ -28,7 +30,7 @@ interface WrapperConfig<T>
 }
 
 export function useSWRWrapper<T = Record<string, unknown>>(
-  key: string | null | (() => string | string[] | null) | string[],
+  key: string | (() => string),
   {
     url,
     method,
@@ -37,11 +39,13 @@ export function useSWRWrapper<T = Record<string, unknown>>(
     noEndPoint,
     enable = true,
     notification,
-    ignoreSuccessNotification,
+    ignoreSuccessNotification = true,
     ...config
   }: WrapperConfig<T>,
 ) {
   auth = auth ?? true;
+
+  const { sessionInfo } = useSession();
 
   return useSWR<T>(
     enable ? (key ?? '') : null,
@@ -54,22 +58,24 @@ export function useSWRWrapper<T = Record<string, unknown>>(
       }
 
       const header = {
-        ...(auth &&
-          {
-            // Authorization: `Bearer ${session?.accessToken}`,
-          }),
+        ...(auth && {
+          Authorization: `Bearer ${sessionInfo?.data?.accessToken}`,
+        }),
         ...extraHeader,
         ...config?.extraHeader,
       };
 
+      const urlKey: string =
+        typeof url === 'function'
+          ? url()
+          : url
+            ? url
+            : typeof key === 'function'
+              ? key()
+              : key;
+
       return new Promise((resolve, reject) => {
-        fetcher<T>(
-          url ?? (typeof key === 'string' ? key : ''),
-          method ?? METHOD.GET,
-          body,
-          header,
-          noEndPoint,
-        )
+        fetcher<T>(urlKey, method ?? METHOD.GET, body, header, noEndPoint)
           .then((data) => {
             resolve(data);
           })
@@ -111,7 +117,7 @@ interface MutationConfig<T>
     RestResponse<T>,
     RestError & Record<string, unknown>
   > {
-  url?: string;
+  url?: string | (() => string);
   method?: METHOD;
   componentId?: string;
   loading?: boolean;
@@ -138,6 +144,8 @@ export const useMutation = <T = Record<string, unknown>,>(
     ...config
   }: MutationConfig<T>,
 ) => {
+  const { sessionInfo } = useSession();
+
   return useSWRMutation(
     key,
     (
@@ -152,16 +160,18 @@ export const useMutation = <T = Record<string, unknown>,>(
           delete body.extraHeader;
         }
 
+        const urlKey = typeof url === 'function' ? url() : (url ?? key);
+
         fetcher<T>(
-          url ?? swrKey,
+          urlKey ?? swrKey,
           method ?? METHOD.POST,
           body as Record<string, unknown>,
           config.noAuth
             ? undefined
             : {
-                // ...(session?.accessToken && {
-                //   Authorization: `Bearer ${session?.accessToken}`,
-                // }),
+                ...(sessionInfo?.data?.accessToken && {
+                  Authorization: `Bearer ${sessionInfo?.data?.accessToken}`,
+                }),
                 ...extraHeader,
                 ...config?.extraHeader,
               },
